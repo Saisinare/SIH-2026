@@ -97,6 +97,27 @@ export default function SettingsScreen() {
         )}
       </View>
 
+      {/* Onboarding Flow Management */}
+      <Text style={styles.sectionTitle}>Onboarding & Account</Text>
+      <View style={styles.card}>
+        <TouchableOpacity
+          style={styles.langRow}
+          onPress={() => {
+            const { resetOnboarding } = useAppStore.getState();
+            resetOnboarding();
+          }}
+        >
+          <View>
+            <Text style={[styles.langLabel, { color: '#EF4444', fontWeight: '700' }]}>
+              🔄 Reset Onboarding Flow
+            </Text>
+            <Text style={{ fontSize: 12, color: '#64748B', marginTop: 2 }}>
+              Clear saved onboarding answers & restart sign-up
+            </Text>
+          </View>
+        </TouchableOpacity>
+      </View>
+
       {/* About */}
       <View style={styles.about}>
         <Text style={styles.aboutTitle}>उद्यम सारथी (Udyam Saarthi)</Text>

@@ -1,284 +1,462 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
-  View, Text, StyleSheet, TextInput, TouchableOpacity,
-  ActivityIndicator, Alert, ScrollView, Switch,
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  StatusBar,
+  Platform,
+  Dimensions,
+  ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useAppStore } from '../../src/presentation/store/app-store';
-import { verdictEngine, villageRepo } from '../../src/core/di';
-import { Village } from '../../src/domain/models/village';
+import { Ionicons } from '@expo/vector-icons';
+import VoiceSphere from '../../src/presentation/components/VoiceSphere';
 
-const SECTORS = [
-  'Kirana Store', 'Dairy', 'Poultry',
-  'Tailoring', 'Handicrafts', 'Agri-Input Shop', 'Flour Mill',
+const { width: SCREEN_W } = Dimensions.get('window');
+const SPHERE_SIZE = Math.min(SCREEN_W * 0.85, 340);
+
+// ── Fainted Orange Light Theme Color Tokens ─────────────
+const COLORS = {
+  bg: '#FAF0E6',                 // Fainted orange background
+  bgCard: '#FFFFFF',             // White card containers
+  bgCardBorder: '#EAE1D2',       // Warm card borders
+  textPrimary: '#2B231F',        // Dark warm primary text
+  textSecondary: '#5A4E44',      // Medium warm secondary text
+  textMuted: '#8A7B6F',          // Subtle muted text
+  accent: '#BD5D38',             // Terra cotta primary accent
+  accentLight: '#D97757',
+  accentGlow: 'rgba(189,93,56,0.18)',
+  green: '#10B981',
+  amber: '#D97706',
+  pink: '#DB2777',
+  blue: '#2563EB',
+};
+
+// ── Quick Action Cards ──────────────────────────────────
+const FEATURES = [
+  {
+    icon: 'analytics-outline' as const,
+    label: 'Analyze',
+    desc: 'Business viability',
+    color: '#BD5D38',
+    route: '/intake',
+  },
+  {
+    icon: 'document-text-outline' as const,
+    label: 'Insights',
+    desc: 'Market reports',
+    color: '#10B981',
+    route: '/(tabs)/insights',
+  },
+  {
+    icon: 'time-outline' as const,
+    label: 'History',
+    desc: 'Past queries',
+    color: '#D97706',
+    route: '/(tabs)/history',
+  },
+  {
+    icon: 'settings-outline' as const,
+    label: 'Settings',
+    desc: 'Preferences',
+    color: '#2563EB',
+    route: '/(tabs)/settings',
+  },
 ];
-
-const PRESETS = [
-  { label: '🛒 Kirana (Saturated)', village: 'Rampur',   sector: 'Kirana Store', loan: 60000,  capital: 20000 },
-  { label: '🥛 Dairy (Viable)',     village: 'Nandgaon', sector: 'Dairy',        loan: 100000, capital: 40000 },
-  { label: '🐣 Poultry (Risk)',      village: 'Shivpur',  sector: 'Poultry',      loan: 250000, capital: 15000 },
-];
-
-const PRIMARY = '#0F766E';
-const AMBER   = '#F59E0B';
-const BG      = '#F0FDFA';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const {
-    selectedVillage, setVillage,
-    sector, setSector,
-    loanAmount, setLoanAmount,
-    availableCapital, setAvailableCapital,
-    isWoman, setIsWoman,
-    isScSt, setIsScSt,
-    isLoading, setIsLoading,
-    setVerdict,
-  } = useAppStore();
-
-  const [villages, setVillages] = useState<Village[]>([]);
-  const [searchText, setSearchText] = useState('');
-  const [suggestions, setSuggestions] = useState<Village[]>([]);
+  const [isListening, setIsListening] = useState(false);
+  const [greeting, setGreeting] = useState('');
 
   useEffect(() => {
-    villageRepo.getVillagesInRadius(19.85, 75.32, 200).then((res) => {
-      if (res.success) setVillages(res.data);
-    });
+    const hour = new Date().getHours();
+    if (hour < 12) setGreeting('Good Morning');
+    else if (hour < 17) setGreeting('Good Afternoon');
+    else setGreeting('Good Evening');
   }, []);
 
-  const handleSearch = async (text: string) => {
-    setSearchText(text);
-    if (text.trim().length < 2) { setSuggestions([]); return; }
-    const res = await villageRepo.searchByName(text);
-    if (res.success) setSuggestions(res.data.slice(0, 5));
-  };
+  const toggleListening = useCallback(() => {
+    setIsListening((prev) => !prev);
+  }, []);
 
-  const selectVillage = (v: Village) => {
-    setVillage(v);
-    setSearchText(v.name);
-    setSuggestions([]);
-  };
-
-  const applyPreset = async (p: typeof PRESETS[0]) => {
-    setSearchText(p.village);
-    setSector(p.sector);
-    setLoanAmount(p.loan);
-    setAvailableCapital(p.capital);
-    const res = await villageRepo.searchByName(p.village);
-    if (res.success && res.data.length > 0) setVillage(res.data[0]);
-  };
-
-  const handleAnalyze = async () => {
-    if (!selectedVillage) { Alert.alert('Error', 'Please select a village'); return; }
-    setIsLoading(true);
-    const result = await verdictEngine.evaluate(
-      selectedVillage, sector, loanAmount, availableCapital, isWoman, isScSt,
-    );
-    setIsLoading(false);
-    if (result.success) {
-      setVerdict(result.data);
-      router.push('/results');
-    } else {
-      Alert.alert('Engine Error', result.error.message);
-    }
-  };
+  const navigateToVoice = useCallback(() => {
+    router.push('/ai-voice');
+  }, [router]);
 
   return (
-    <ScrollView style={styles.root} contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>उद्यम सारथी</Text>
-        <Text style={styles.headerSub}>Business Viability Advisor</Text>
-      </View>
+    <View style={styles.root}>
+      <StatusBar barStyle="dark-content" backgroundColor={COLORS.bg} />
 
-      {/* Quick Demo Presets */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>⚡ Quick Demo Presets</Text>
-        <View style={styles.presetRow}>
-          {PRESETS.map((p) => (
-            <TouchableOpacity key={p.label} style={styles.presetChip} onPress={() => applyPreset(p)}>
-              <Text style={styles.presetText}>{p.label}</Text>
-            </TouchableOpacity>
-          ))}
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* ── Header ─────────────────────────────────── */}
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.greetingText}>{greeting} 👋</Text>
+            <Text style={styles.headerTitle}>उद्यम सारथी</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.profileBtn}
+            activeOpacity={0.7}
+            onPress={() => router.push('/(tabs)/settings')}
+          >
+            <Ionicons name="person-outline" size={20} color={COLORS.textPrimary} />
+          </TouchableOpacity>
         </View>
-      </View>
 
-      {/* Village Search */}
-      <View style={styles.section}>
-        <Text style={styles.sectionLabel}>1. Village Name</Text>
-        <TextInput
-          style={styles.input}
-          value={searchText}
-          onChangeText={handleSearch}
-          placeholder="e.g. Rampur, Nandgaon..."
-          placeholderTextColor="#94A3B8"
-        />
-        {suggestions.length > 0 && (
-          <View style={styles.suggestionBox}>
-            {suggestions.map((v) => (
-              <TouchableOpacity key={v.id} style={styles.suggestionItem} onPress={() => selectVillage(v)}>
-                <Text style={styles.suggestionName}>📍 {v.name}</Text>
-                <Text style={styles.suggestionSub}>{v.taluka}, {v.district}</Text>
+        {/* ── Voice Sphere Hero ──────────────────────── */}
+        <View style={styles.sphereSection}>
+          <VoiceSphere size={SPHERE_SIZE} />
+
+          {/* Status indicator */}
+          <View style={styles.statusPill}>
+            <View
+              style={[
+                styles.statusDot,
+                { backgroundColor: isListening ? COLORS.green : COLORS.accent },
+              ]}
+            />
+            <Text style={styles.statusText}>
+              {isListening ? 'Listening...' : 'Tap mic to start'}
+            </Text>
+          </View>
+        </View>
+
+        {/* ── Assistant Badge ────────────────────────── */}
+        <View style={styles.badgeRow}>
+          <View style={styles.badge}>
+            <Ionicons name="heart" size={14} color={COLORS.accent} />
+            <Text style={styles.badgeText}>Udyam Saarthi Assistant</Text>
+          </View>
+        </View>
+
+        {/* ── Voice CTA ──────────────────────────────── */}
+        <View style={styles.ctaSection}>
+          <Text style={styles.ctaTitle}>Business Guidance</Text>
+          <Text style={styles.ctaSubtitle}>
+            Ask anything about business viability, schemes, and market insights in your language.
+          </Text>
+
+          {/* Language support pill */}
+          <View style={styles.langPill}>
+            <Text style={styles.langText}>
+              <Text style={{ color: COLORS.green }}>●</Text> हिंदी{'  '}•{'  '}English{'  '}•{'  '}मराठी
+            </Text>
+          </View>
+
+          {/* Action buttons */}
+          <View style={styles.actionRow}>
+            {/* Primary mic button */}
+            <TouchableOpacity
+              style={[
+                styles.micButton,
+                isListening && styles.micButtonActive,
+              ]}
+              activeOpacity={0.85}
+              onPress={toggleListening}
+            >
+              <View style={[styles.micInner, isListening && styles.micInnerActive]}>
+                <Ionicons
+                  name={isListening ? 'stop' : 'mic'}
+                  size={26}
+                  color="#FFFFFF"
+                />
+              </View>
+            </TouchableOpacity>
+
+            {/* Full voice chat button */}
+            <TouchableOpacity
+              style={styles.voiceChatBtn}
+              activeOpacity={0.8}
+              onPress={navigateToVoice}
+            >
+              <Ionicons name="chatbubble-ellipses-outline" size={20} color={COLORS.accent} />
+              <Text style={styles.voiceChatText}>Voice Chat</Text>
+              <Ionicons name="arrow-forward" size={16} color={COLORS.textMuted} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* ── Quick Access Cards ─────────────────────── */}
+        <View style={styles.cardsSection}>
+          <Text style={styles.cardsSectionTitle}>Quick Access</Text>
+          <View style={styles.cardsGrid}>
+            {FEATURES.map((f) => (
+              <TouchableOpacity
+                key={f.label}
+                style={styles.featureCard}
+                activeOpacity={0.75}
+                onPress={() => router.push(f.route as any)}
+              >
+                <View style={[styles.featureIconWrap, { backgroundColor: f.color + '15' }]}>
+                  <Ionicons name={f.icon} size={22} color={f.color} />
+                </View>
+                <Text style={styles.featureLabel}>{f.label}</Text>
+                <Text style={styles.featureDesc}>{f.desc}</Text>
               </TouchableOpacity>
             ))}
           </View>
-        )}
-        {selectedVillage && (
-          <View style={styles.selectedVillage}>
-            <Text style={styles.selectedVillageText}>✅ {selectedVillage.name} • {selectedVillage.district}</Text>
-          </View>
-        )}
-      </View>
+        </View>
 
-      {/* Sector Picker */}
-      <View style={styles.section}>
-        <Text style={styles.sectionLabel}>2. Business Sector</Text>
-        <View style={styles.chipRow}>
-          {SECTORS.map((s) => (
-            <TouchableOpacity
-              key={s}
-              style={[styles.chip, sector === s && styles.chipActive]}
-              onPress={() => setSector(s)}
-            >
-              <Text style={[styles.chipText, sector === s && styles.chipTextActive]}>{s}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-
-      {/* Loan Amount */}
-      <View style={styles.section}>
-        <View style={styles.sliderHeader}>
-          <Text style={styles.sectionLabel}>3. Requested Loan</Text>
-          <Text style={styles.sliderValue}>₹{loanAmount.toLocaleString('en-IN')}</Text>
-        </View>
-        <View style={styles.sliderButtons}>
-          {[50000, 100000, 150000, 200000, 300000, 500000].map((amt) => (
-            <TouchableOpacity
-              key={amt}
-              style={[styles.amtBtn, loanAmount === amt && styles.amtBtnActive]}
-              onPress={() => setLoanAmount(amt)}
-            >
-              <Text style={[styles.amtBtnText, loanAmount === amt && styles.amtBtnTextActive]}>
-                ₹{amt >= 100000 ? `${amt / 100000}L` : `${amt / 1000}k`}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-
-      {/* Capital */}
-      <View style={styles.section}>
-        <View style={styles.sliderHeader}>
-          <Text style={styles.sectionLabel}>4. Own Capital</Text>
-          <Text style={[styles.sliderValue, { color: AMBER }]}>₹{availableCapital.toLocaleString('en-IN')}</Text>
-        </View>
-        <View style={styles.sliderButtons}>
-          {[0, 10000, 20000, 40000, 75000, 100000].map((amt) => (
-            <TouchableOpacity
-              key={amt}
-              style={[styles.amtBtn, availableCapital === amt && styles.amtBtnActive]}
-              onPress={() => setAvailableCapital(amt)}
-            >
-              <Text style={[styles.amtBtnText, availableCapital === amt && styles.amtBtnTextActive]}>
-                {amt === 0 ? '₹0' : amt >= 100000 ? `₹${amt / 100000}L` : `₹${amt / 1000}k`}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-
-      {/* Toggles */}
-      <View style={styles.card}>
-        <View style={styles.toggleRow}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.toggleLabel}>Women Entrepreneur</Text>
-            <Text style={styles.toggleSub}>Stand-Up India / Women subsidy</Text>
-          </View>
-          <Switch value={isWoman} onValueChange={setIsWoman} trackColor={{ true: PRIMARY }} />
-        </View>
-        <View style={[styles.toggleRow, { marginTop: 12 }]}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.toggleLabel}>SC/ST Beneficiary</Text>
-            <Text style={styles.toggleSub}>NBCFDC / Special credit benefits</Text>
-          </View>
-          <Switch value={isScSt} onValueChange={setIsScSt} trackColor={{ true: PRIMARY }} />
-        </View>
-      </View>
-
-      {/* Submit */}
-      <TouchableOpacity style={styles.submitBtn} onPress={handleAnalyze} disabled={isLoading}>
-        {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.submitText}>📊 Analyze Viability</Text>}
-      </TouchableOpacity>
-    </ScrollView>
+        {/* Bottom spacing for tab bar */}
+        <View style={{ height: 100 }} />
+      </ScrollView>
+    </View>
   );
 }
 
+// ── Styles (Light Fainted Orange Theme) ─────────────────
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: BG },
-  container: { paddingBottom: 32 },
+  root: {
+    flex: 1,
+    backgroundColor: COLORS.bg,
+  },
+  scroll: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 20,
+  },
+
+  // Header
   header: {
-    backgroundColor: PRIMARY, paddingTop: 56, paddingBottom: 20, paddingHorizontal: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 44) + 8 : 56,
+    paddingBottom: 8,
   },
-  headerTitle: { fontSize: 28, fontWeight: '900', color: '#FEF3C7' },
-  headerSub: { fontSize: 14, color: '#99F6E4', marginTop: 2 },
-  card: {
-    backgroundColor: '#fff', margin: 16, marginBottom: 0,
-    borderRadius: 16, padding: 16,
-    elevation: 2, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 8, shadowOffset: { width: 0, height: 2 },
+  greetingText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    fontWeight: '600',
+    marginBottom: 2,
   },
-  cardTitle: { fontSize: 13, fontWeight: '700', color: PRIMARY, marginBottom: 10 },
-  presetRow: { gap: 8 },
-  presetChip: {
-    backgroundColor: '#F0FDFA', borderWidth: 1, borderColor: '#99F6E4',
-    borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8,
+  headerTitle: {
+    fontSize: 26,
+    fontWeight: '800',
+    color: COLORS.textPrimary,
+    letterSpacing: -0.5,
   },
-  presetText: { fontSize: 13, color: PRIMARY, fontWeight: '600' },
-  section: { marginHorizontal: 16, marginTop: 16 },
-  sectionLabel: { fontSize: 14, fontWeight: '700', color: '#1E293B', marginBottom: 8 },
-  input: {
-    backgroundColor: '#fff', borderWidth: 1, borderColor: '#E2E8F0',
-    borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12,
-    fontSize: 15, color: '#1E293B',
+  profileBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: COLORS.bgCard,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.bgCardBorder,
+    shadowColor: '#4A3B2C',
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
-  suggestionBox: {
-    backgroundColor: '#fff', borderWidth: 1, borderColor: '#E2E8F0',
-    borderRadius: 12, marginTop: 4, overflow: 'hidden',
-    elevation: 4, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 8,
+
+  // Sphere
+  sphereSection: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    position: 'relative',
   },
-  suggestionItem: { paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
-  suggestionName: { fontSize: 14, fontWeight: '600', color: '#1E293B' },
-  suggestionSub: { fontSize: 12, color: '#64748B', marginTop: 2 },
-  selectedVillage: {
-    marginTop: 8, backgroundColor: '#DCFCE7', borderRadius: 10,
-    paddingHorizontal: 14, paddingVertical: 8,
+
+  statusPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F2E4D6',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E6D4C2',
+    marginTop: 4,
   },
-  selectedVillageText: { fontSize: 13, color: '#166534', fontWeight: '600' },
-  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: {
-    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
-    backgroundColor: '#fff', borderWidth: 1, borderColor: '#E2E8F0',
+  statusDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+    marginRight: 8,
   },
-  chipActive: { backgroundColor: PRIMARY, borderColor: PRIMARY },
-  chipText: { fontSize: 13, color: '#475569', fontWeight: '500' },
-  chipTextActive: { color: '#fff', fontWeight: '700' },
-  sliderHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  sliderValue: { fontSize: 18, fontWeight: '800', color: PRIMARY },
-  sliderButtons: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  amtBtn: {
-    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10,
-    backgroundColor: '#fff', borderWidth: 1, borderColor: '#E2E8F0',
+  statusText: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    fontWeight: '600',
   },
-  amtBtnActive: { backgroundColor: PRIMARY, borderColor: PRIMARY },
-  amtBtnText: { fontSize: 13, color: '#475569', fontWeight: '500' },
-  amtBtnTextActive: { color: '#fff', fontWeight: '700' },
-  toggleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  toggleLabel: { fontSize: 14, fontWeight: '600', color: '#1E293B' },
-  toggleSub: { fontSize: 11, color: '#64748B', marginTop: 2 },
-  submitBtn: {
-    backgroundColor: PRIMARY, margin: 16, marginTop: 20,
-    borderRadius: 16, paddingVertical: 16, alignItems: 'center',
-    elevation: 4, shadowColor: PRIMARY, shadowOpacity: 0.4, shadowRadius: 12, shadowOffset: { width: 0, height: 4 },
+
+  // Badge
+  badgeRow: {
+    alignItems: 'center',
+    marginTop: 10,
   },
-  submitText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+  badge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.bgCard,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: COLORS.bgCardBorder,
+    gap: 6,
+    shadowColor: '#4A3B2C',
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
+  },
+  badgeText: {
+    fontSize: 13,
+    color: COLORS.accent,
+    fontWeight: '700',
+  },
+
+  // CTA
+  ctaSection: {
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    marginTop: 18,
+  },
+  ctaTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: COLORS.textPrimary,
+    textAlign: 'center',
+    letterSpacing: -0.3,
+    marginBottom: 8,
+  },
+  ctaSubtitle: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
+    paddingHorizontal: 16,
+    marginBottom: 14,
+  },
+  langPill: {
+    backgroundColor: COLORS.bgCard,
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: COLORS.bgCardBorder,
+    marginBottom: 20,
+  },
+  langText: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    fontWeight: '600',
+  },
+  actionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  micButton: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    backgroundColor: 'rgba(189,93,56,0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: COLORS.accent,
+  },
+  micButtonActive: {
+    backgroundColor: 'rgba(16,185,129,0.2)',
+    borderColor: COLORS.green,
+  },
+  micInner: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    backgroundColor: COLORS.accent,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 6,
+    shadowColor: COLORS.accent,
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  micInnerActive: {
+    backgroundColor: COLORS.green,
+  },
+  voiceChatBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.bgCard,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderRadius: 28,
+    borderWidth: 1.5,
+    borderColor: COLORS.bgCardBorder,
+    gap: 10,
+    shadowColor: '#4A3B2C',
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2,
+  },
+  voiceChatText: {
+    fontSize: 14,
+    color: COLORS.textPrimary,
+    fontWeight: '700',
+  },
+
+  // Feature Cards
+  cardsSection: {
+    paddingHorizontal: 24,
+    marginTop: 32,
+  },
+  cardsSectionTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: COLORS.textPrimary,
+    marginBottom: 14,
+  },
+  cardsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  featureCard: {
+    width: (SCREEN_W - 60) / 2,
+    backgroundColor: COLORS.bgCard,
+    borderRadius: 18,
+    padding: 16,
+    borderWidth: 1.5,
+    borderColor: COLORS.bgCardBorder,
+    shadowColor: '#4A3B2C',
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2,
+  },
+  featureIconWrap: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  featureLabel: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: COLORS.textPrimary,
+    marginBottom: 3,
+  },
+  featureDesc: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    fontWeight: '500',
+  },
 });

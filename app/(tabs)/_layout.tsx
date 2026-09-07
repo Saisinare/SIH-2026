@@ -41,7 +41,7 @@ function CustomTabBar({ state, navigation }: any) {
               <Ionicons
                 name={(isFocused ? tab.activeIcon : tab.icon) as any}
                 size={22}
-                color="#FFFFFF"
+                color={isFocused ? '#BD5D38' : '#7A6B60'}
               />
               <Text style={[styles.tabLabel, isFocused && styles.tabLabelActive]}>
                 {tab.label}
@@ -56,12 +56,11 @@ function CustomTabBar({ state, navigation }: any) {
         activeOpacity={0.8}
         onPress={() => router.push('/ai-voice')}
       >
-        <Ionicons name="search" size={22} color="#FFFFFF" />
+        <Ionicons name="mic" size={24} color="#FFFFFF" />
       </TouchableOpacity>
     </View>
   );
 }
-
 
 export default function TabLayout() {
   return (
@@ -90,16 +89,18 @@ const styles = StyleSheet.create({
   pillBar: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: '#1A1D24',
+    backgroundColor: '#FFFFFF',
     borderRadius: 36,
     paddingVertical: 6,
     paddingHorizontal: 6,
     marginRight: 10,
-    elevation: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
+    borderWidth: 1.5,
+    borderColor: '#EAE1D2',
+    elevation: 8,
+    shadowColor: '#4A3B2C',
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
     alignItems: 'center',
     justifyContent: 'space-around',
   },
@@ -111,31 +112,29 @@ const styles = StyleSheet.create({
     borderRadius: 26,
   },
   tabItemActive: {
-    backgroundColor: '#2D3240',
+    backgroundColor: '#F7EDE2',
   },
   tabLabel: {
     fontSize: 11,
-    fontWeight: '500',
-    color: '#9E9FA4',
+    fontWeight: '600',
+    color: '#7A6B60',
     marginTop: 3,
   },
   tabLabelActive: {
-    color: '#FFFFFF',
-    fontWeight: '600',
+    color: '#BD5D38',
+    fontWeight: '800',
   },
   searchButton: {
     width: 54,
     height: 54,
     borderRadius: 27,
-    backgroundColor: '#1A1D24',
+    backgroundColor: '#BD5D38',
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
+    shadowColor: '#BD5D38',
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
   },
 });
-
-

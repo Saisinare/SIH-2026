@@ -70,6 +70,40 @@ interface Strings {
   alternativeSectors: string;
   noActiveAssessment: string;
   startNewAssessment: string;
+  // Onboarding
+  welcomeTitle: string;
+  welcomeSubtitle: string;
+  signupTitle: string;
+  phoneLabel: string;
+  phonePlaceholder: string;
+  sendOtp: string;
+  enterOtp: string;
+  verifyOtp: string;
+  invalidPhone: string;
+  invalidOtp: string;
+  selectLanguageTitle: string;
+  selectLanguageSubtitle: string;
+  businessTypeTitle: string;
+  businessTypeSubtitle: string;
+  newBusinessTitle: string;
+  newBusinessDesc: string;
+  existingBusinessTitle: string;
+  existingBusinessDesc: string;
+  voiceQATitle: string;
+  voiceQASubtitle: string;
+  typeAnswerPlaceholder: string;
+  nextQuestion: string;
+  finishOnboarding: string;
+  skipStep: string;
+  recordingActive: string;
+  listening: string;
+  tapToSpeak: string;
+  qNew1: string;
+  qNew2: string;
+  qNew3: string;
+  qEx1: string;
+  qEx2: string;
+  qEx3: string;
 }
 
 const strings: Record<LangKey, Strings> = {
@@ -134,6 +168,40 @@ const strings: Record<LangKey, Strings> = {
     alternativeSectors: 'वैकल्पिक व्यवसाय',
     noActiveAssessment: 'कोई सक्रिय मूल्यांकन नहीं मिला।',
     startNewAssessment: 'नया विश्लेषण शुरू करें',
+    // Onboarding Hindi
+    welcomeTitle: 'उद्यम सारथी में आपका स्वागत है',
+    welcomeSubtitle: 'आपका अपना AI ग्रामीण व्यवसाय सलाहकार',
+    signupTitle: 'मोबाइल नंबर दर्ज करें',
+    phoneLabel: '10 अंकों का मोबाइल नंबर',
+    phonePlaceholder: '9876543210',
+    sendOtp: 'OTP भेजें',
+    enterOtp: '4 अंकों का OTP दर्ज करें',
+    verifyOtp: 'सत्यापित करें और आगे बढ़ें',
+    invalidPhone: 'कृपया 10 अंकों का मान्य मोबाइल नंबर दर्ज करें',
+    invalidOtp: 'कृपया 4 अंकों का OTP दर्ज करें',
+    selectLanguageTitle: 'अपनी भाषा चुनें',
+    selectLanguageSubtitle: 'आप उद्यम सारथी का उपयोग किस भाषा में करना चाहते हैं?',
+    businessTypeTitle: 'आपकी व्यावसायिक स्थिति',
+    businessTypeSubtitle: 'कृपया चुनें कि आप नया व्यवसाय शुरू कर रहे हैं या मौजूदा व्यवसाय बढ़ा रहे हैं',
+    newBusinessTitle: 'नया व्यवसाय (New Business)',
+    newBusinessDesc: 'मैं एक नया व्यवसाय या उद्यम शुरू करना चाहता हूँ',
+    existingBusinessTitle: 'मौजूदा व्यवसाय (Existing Business)',
+    existingBusinessDesc: 'मेरा पहले से व्यवसाय है और मैं इसे बढ़ाना चाहता हूँ',
+    voiceQATitle: 'AI सलाहकार से बातचीत',
+    voiceQASubtitle: 'माइक दबाकर बोलें या उत्तर टाइप करें',
+    typeAnswerPlaceholder: 'अपना उत्तर यहाँ लिखें...',
+    nextQuestion: 'अगला प्रश्न',
+    finishOnboarding: 'मुख्य पृष्ठ पर जाएं',
+    skipStep: 'आगे बढ़ें (Skip)',
+    recordingActive: 'सुन रहा है... बोलिए',
+    listening: 'माइक सक्रिय है',
+    tapToSpeak: 'बोलने के लिए माइक दबाएं',
+    qNew1: 'आप कौन सा नया व्यवसाय शुरू करना चाहते हैं?',
+    qNew2: 'आपका व्यवसाय किस स्थान/गाँव में होगा?',
+    qNew3: 'शुरू करने के लिए आपको कितनी पूँजी या ऋण की आवश्यकता है?',
+    qEx1: 'आपका वर्तमान व्यवसाय क्या है और आप इसे कितने समय से चला रहे हैं?',
+    qEx2: 'आपकी मासिक बिक्री या औसत आय कितनी है?',
+    qEx3: 'व्यवसाय के विस्तार के लिए आपकी मुख्य आवश्यकता क्या है?',
   },
   mr: {
     appName: 'उद्यम सारथी',
@@ -196,6 +264,40 @@ const strings: Record<LangKey, Strings> = {
     alternativeSectors: 'पर्यायी व्यवसाय',
     noActiveAssessment: 'कोणतेही सक्रिय मूल्यांकन सापडले नाही.',
     startNewAssessment: 'नवीन मूल्यांकन सुरू करा',
+    // Onboarding Marathi
+    welcomeTitle: 'उद्यम सारथी मध्ये आपले स्वागत आहे',
+    welcomeSubtitle: 'तुमचा स्वतःचा AI ग्रामीण व्यवसाय सल्लागार',
+    signupTitle: 'मोबाइल नंबर टाका',
+    phoneLabel: '१० अंकी मोबाइल नंबर',
+    phonePlaceholder: '9876543210',
+    sendOtp: 'OTP पाठवा',
+    enterOtp: '४ अंकी OTP टाका',
+    verifyOtp: 'सत्यापित करा आणि पुढे जा',
+    invalidPhone: 'कृपया १० अंकी वैध मोबाइल नंबर टाका',
+    invalidOtp: 'कृपया ४ अंकी OTP टाका',
+    selectLanguageTitle: 'तुमची भाषा निवडा',
+    selectLanguageSubtitle: 'तुम्हाला उद्यम सारथी कोणत्या भाषेत वापरायचे आहे?',
+    businessTypeTitle: 'तुमची व्यावसायिक स्थिती',
+    businessTypeSubtitle: 'तुम्ही नवीन व्यवसाय सुरू करत आहात की सध्याचा व्यवसाय वाढवत आहात?',
+    newBusinessTitle: 'नवीन व्यवसाय (New Business)',
+    newBusinessDesc: 'मला एक नवीन व्यवसाय सुरू करायचा आहे',
+    existingBusinessTitle: 'सध्याचा व्यवसाय (Existing Business)',
+    existingBusinessDesc: 'माझा आधीपासूनच व्यवसाय आहे आणि मला तो वाढवायचा आहे',
+    voiceQATitle: 'AI सल्लागाराशी संवाद',
+    voiceQASubtitle: 'माईक दाबून बोला किंवा उत्तर टाईप करा',
+    typeAnswerPlaceholder: 'तुमचे उत्तर येथे लिहा...',
+    nextQuestion: 'पुढील प्रश्न',
+    finishOnboarding: 'मुख्यपृष्ठावर जा',
+    skipStep: 'पुढे जा (Skip)',
+    recordingActive: 'ऐकत आहे... बोला',
+    listening: 'माईक सुरू आहे',
+    tapToSpeak: 'बोलण्यासाठी माईक दाबा',
+    qNew1: 'तुम्हाला कोणता नवीन व्यवसाय सुरू करायचा आहे?',
+    qNew2: 'तुमचा व्यवसाय कोणत्या ठिकाणी किंवा गावात असेल?',
+    qNew3: 'सुरू करण्यासाठी तुम्हाला किती भांडवल किंवा कर्जाची गरज आहे?',
+    qEx1: 'तुमचा सध्याचा व्यवसाय काय आहे आणि तुम्ही तो किती काळापासून करत आहात?',
+    qEx2: 'तुमची सरासरी मासिक विक्री किंवा उत्पन्न किती आहे?',
+    qEx3: 'व्यवसाय वाढवण्यासाठी तुमची मुख्य गरज काय आहे?',
   },
   en: {
     appName: 'Udyam Saarthi',
@@ -258,6 +360,40 @@ const strings: Record<LangKey, Strings> = {
     alternativeSectors: 'Promising Alternatives',
     noActiveAssessment: 'No active assessment found.',
     startNewAssessment: 'Start New Assessment',
+    // Onboarding English
+    welcomeTitle: 'Welcome to Udyam Saarthi',
+    welcomeSubtitle: 'Your AI Rural Business Viability Advisor',
+    signupTitle: 'Enter Mobile Number',
+    phoneLabel: '10-digit Mobile Number',
+    phonePlaceholder: '9876543210',
+    sendOtp: 'Send OTP',
+    enterOtp: 'Enter 4-digit OTP',
+    verifyOtp: 'Verify & Continue',
+    invalidPhone: 'Please enter a valid 10-digit mobile number',
+    invalidOtp: 'Please enter a valid 4-digit OTP',
+    selectLanguageTitle: 'Select Your Language',
+    selectLanguageSubtitle: 'In which language would you like to use Udyam Saarthi?',
+    businessTypeTitle: 'Your Business Status',
+    businessTypeSubtitle: 'Are you starting a new business or expanding an existing one?',
+    newBusinessTitle: 'New Business',
+    newBusinessDesc: 'I want to start a brand new business venture',
+    existingBusinessTitle: 'Existing Business',
+    existingBusinessDesc: 'I already have a business and want to expand it',
+    voiceQATitle: 'AI Advisor Interaction',
+    voiceQASubtitle: 'Speak via mic or type your answers below',
+    typeAnswerPlaceholder: 'Type your answer here...',
+    nextQuestion: 'Next Question',
+    finishOnboarding: 'Go to Home',
+    skipStep: 'Skip to Home',
+    recordingActive: 'Listening... speak now',
+    listening: 'Microphone active',
+    tapToSpeak: 'Tap mic to speak',
+    qNew1: 'What type of new business do you plan to start?',
+    qNew2: 'Where will your business be located?',
+    qNew3: 'How much capital or loan do you require?',
+    qEx1: 'What is your current business and how long have you been running it?',
+    qEx2: 'What is your average monthly revenue or income?',
+    qEx3: 'What is your primary requirement for expanding?',
   },
 };
 

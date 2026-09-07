@@ -9,30 +9,34 @@ import {
   Platform,
   Animated,
   ScrollView,
+  Dimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import VoiceOrb from '../src/presentation/components/VoiceOrb';
+import VoiceSphere from '../../src/presentation/components/VoiceSphere';
 
-// Multilingual action titles ("What are we doing")
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const SPHERE_SIZE = Math.min(SCREEN_WIDTH * 0.75, 260);
+
+// Multilingual action titles ("What are we doing") — Natural human phrasing
 const MULTILINGUAL_TITLES = [
-  { lang: 'English', text: 'Voice Business Guidance' },
-  { lang: 'हिंदी',   text: 'आवाज व्यवसाय मार्गदर्शन' },
-  { lang: 'मराठी',   text: 'व्हॉइस व्यवसाय सल्ला' },
-  { lang: 'தமிழ்',  text: 'குரல் வணிக ஆலோசனை' },
+  { lang: 'English', text: 'Business Guidance & Planning' },
+  { lang: 'हिंदी',   text: 'व्यवसाय मार्गदर्शन एवं योजना' },
+  { lang: 'मराठी',   text: 'व्यवसाय मार्गदर्शन व नियोजन' },
+  { lang: 'தமிழ்',  text: 'வணிக வழிகாட்டுதல் மற்றும் திட்டம்' },
 ];
 
-// Simulated natural voice lines
+// Simulated natural voice lines spoken by Saarthi
 const VOICE_LINES = [
-  "Hello! How can I assist you with your business today?",
-  "नमस्ते! आज मैं आपके व्यवसाय से जुड़ी क्या मदद कर सकता हूँ?",
-  "नमस्कार! आज मी तुम्हाला व्यवसायाविषयी काय मदत करू शकेन?",
-  "I am analyzing your business plan. Please hold on...",
-  "कृपया मुझे अपने विचारों के बारे में विस्तार से बताएं।",
-  "I'm here to listen. Feel free to speak anytime.",
+  "Hello! What business idea or question do you have today?",
+  "नमस्ते! आज आपके मन में व्यवसाय का क्या विचार है?",
+  "नमस्कार! आज तुमच्या मनात व्यवसायाची कोणती कल्पना आहे?",
+  "Tell me about your available capital or location.",
+  "कृपया मुझे अपने बजट और जगह के बारे में बताएं।",
+  "I am analyzing market demand in your area...",
 ];
 
-export default function AiVoiceScreen() {
+export default function QuestionsScreen() {
   const router = useRouter();
 
   // ── Multilingual Header Title Animation ─────────────────────────────────────
@@ -82,6 +86,10 @@ export default function AiVoiceScreen() {
   // ── Mic Toggle State ────────────────────────────────────────────────────────
   const [isMicActive, setIsMicActive] = useState(false);
 
+  const handleGoToDashboard = () => {
+    router.replace('/(tabs)');
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#FAF0E6" />
@@ -106,20 +114,24 @@ export default function AiVoiceScreen() {
             </Animated.Text>
           </View>
 
-          <TouchableOpacity style={styles.menuButton} activeOpacity={0.7}>
-            <Ionicons name="ellipsis-vertical" size={18} color="#73685F" />
+          <TouchableOpacity
+            style={styles.skipButton}
+            activeOpacity={0.7}
+            onPress={handleGoToDashboard}
+          >
+            <Text style={styles.skipText}>Skip</Text>
           </TouchableOpacity>
         </View>
 
-        {/* ── MAIN CONTENT (FAINTED ORANGE THEME) ─────────────────────────── */}
+        {/* ── MAIN CONTENT ─────────────────────────────────────────────────── */}
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           bounces={false}
         >
           {/* ── 2. AI SPHERE ───────────────────────────────────────────────── */}
-          <View style={styles.orbWrapper}>
-            <VoiceOrb />
+          <View style={styles.sphereContainer}>
+            <VoiceSphere size={SPHERE_SIZE} />
           </View>
 
           {/* ── 3. SUBTITLE JUST BELOW THE SPHERE (NATURAL HUMAN STATUS) ───── */}
@@ -147,12 +159,26 @@ export default function AiVoiceScreen() {
               Always here to guide your business journey
             </Text>
           </View>
+
+          {/* ── 6. CONTINUE TO DASHBOARD BUTTON ─────────────────────────────── */}
+          <TouchableOpacity
+            style={styles.dashboardBtn}
+            activeOpacity={0.88}
+            onPress={handleGoToDashboard}
+          >
+            <Text style={styles.dashboardBtnText}>Go to Dashboard</Text>
+            <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
+          </TouchableOpacity>
         </ScrollView>
 
         {/* ── BOTTOM CONTROLS ──────────────────────────────────────────────── */}
         <View style={styles.bottomBar}>
-          <TouchableOpacity style={styles.secondaryBtn} activeOpacity={0.8}>
-            <Ionicons name="chatbubble-ellipses-outline" size={22} color="#7D5333" />
+          <TouchableOpacity
+            style={styles.secondaryBtn}
+            activeOpacity={0.8}
+            onPress={handleGoToDashboard}
+          >
+            <Ionicons name="home-outline" size={22} color="#7D5333" />
           </TouchableOpacity>
 
           {/* Glowing Fainted Orange Mic Button */}
@@ -169,9 +195,9 @@ export default function AiVoiceScreen() {
           <TouchableOpacity
             style={styles.secondaryBtn}
             activeOpacity={0.8}
-            onPress={() => router.back()}
+            onPress={handleGoToDashboard}
           >
-            <Ionicons name="close" size={22} color="#7D5333" />
+            <Ionicons name="checkmark" size={24} color="#7D5333" />
           </TouchableOpacity>
         </View>
 
@@ -212,15 +238,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E7D7C5',
   },
-  menuButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+  skipButton: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 18,
     backgroundColor: '#F2E5D7',
-    justifyContent: 'center',
-    alignItems: 'center',
     borderWidth: 1,
     borderColor: '#E7D7C5',
+  },
+  skipText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#7D5333',
   },
   titleContainer: {
     alignItems: 'center',
@@ -235,7 +264,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
     color: '#2B231F',
     textAlign: 'center',
@@ -248,11 +277,9 @@ const styles = StyleSheet.create({
   },
 
   // ── AI Sphere ───────────────────────────────────────────────────────────────
-  orbWrapper: {
-    width: 250,
-    height: 250,
-    justifyContent: 'center',
+  sphereContainer: {
     alignItems: 'center',
+    justifyContent: 'center',
     marginVertical: 10,
   },
 
@@ -267,7 +294,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E6D4C2',
     marginTop: 4,
-    marginBottom: 18,
+    marginBottom: 16,
   },
   statusDot: {
     width: 8,
@@ -290,17 +317,17 @@ const styles = StyleSheet.create({
   speechContainer: {
     width: '100%',
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginBottom: 20,
+    paddingVertical: 10,
+    marginBottom: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
   darkBlackText: {
-    fontSize: 20,
+    fontSize: 19,
     fontWeight: '800',
     color: '#000000',
     textAlign: 'center',
-    lineHeight: 28,
+    lineHeight: 27,
     letterSpacing: -0.2,
   },
 
@@ -308,7 +335,7 @@ const styles = StyleSheet.create({
   lowOpacitySection: {
     alignItems: 'center',
     opacity: 0.4,
-    marginTop: 4,
+    marginBottom: 20,
   },
   lowOpacityRow: {
     flexDirection: 'row',
@@ -325,6 +352,28 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#7A6B60',
     textAlign: 'center',
+  },
+
+  // ── Go to Dashboard Primary Button ──────────────────────────────────────────
+  dashboardBtn: {
+    backgroundColor: '#BD5D38',
+    paddingHorizontal: 28,
+    paddingVertical: 14,
+    borderRadius: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    shadowColor: '#BD5D38',
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
+  },
+  dashboardBtnText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '800',
+    letterSpacing: 0.3,
   },
 
   // ── Bottom Bar Controls ─────────────────────────────────────────────────────

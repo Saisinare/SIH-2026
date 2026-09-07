@@ -6,6 +6,7 @@ import { AssessmentRecord } from '../../domain/models/assessment-record';
 
 const HISTORY_KEY = 'udyam_history';
 const BOOKMARKS_KEY = 'udyam_bookmarks';
+const ONBOARDING_KEY = 'udyam_onboarding';
 
 async function loadHistory(): Promise<AssessmentRecord[]> {
   try {
@@ -37,12 +38,49 @@ async function saveBookmarks(schemes: string[]) {
   } catch (_) {}
 }
 
+interface OnboardingData {
+  isOnboarded: boolean;
+  phoneNumber: string;
+  businessType: 'new' | 'existing' | null;
+  userAnswers: Record<string, string>;
+  locale?: Locale;
+}
+
+async function loadOnboarding(): Promise<OnboardingData | null> {
+  try {
+    const raw = await AsyncStorage.getItem(ONBOARDING_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+async function saveOnboarding(data: OnboardingData) {
+  try {
+    await AsyncStorage.setItem(ONBOARDING_KEY, JSON.stringify(data));
+  } catch (_) {}
+}
+
 type Locale = 'hi' | 'mr' | 'en';
 
 interface AppState {
   // Locale
   locale: Locale;
   setLocale: (locale: Locale) => void;
+
+  // Onboarding
+  isOnboarded: boolean;
+  setIsOnboarded: (val: boolean) => void;
+  phoneNumber: string;
+  setPhoneNumber: (phone: string) => void;
+  businessType: 'new' | 'existing' | null;
+  setBusinessType: (type: 'new' | 'existing' | null) => void;
+  userAnswers: Record<string, string>;
+  setUserAnswer: (key: string, answer: string) => void;
+  onboardingLoaded: boolean;
+  loadOnboardingFromStorage: () => Promise<void>;
+  completeOnboarding: () => void;
+  resetOnboarding: () => void;
 
   // Village search / intake
   selectedVillage: Village | null;
@@ -87,7 +125,64 @@ interface AppState {
 
 export const useAppStore = create<AppState>((set, get) => ({
   locale: 'hi',
-  setLocale: (locale) => set({ locale }),
+  setLocale: (locale) => {
+    set({ locale });
+    const current = get();
+    saveOnboarding({
+      isOnboarded: current.isOnboarded,
+      phoneNumber: current.phoneNumber,
+      businessType: current.businessType,
+      userAnswers: current.userAnswers,
+      locale,
+    });
+  },
+
+  isOnboarded: false,
+  setIsOnboarded: (val) => set({ isOnboarded: val }),
+  phoneNumber: '',
+  setPhoneNumber: (phone) => set({ phoneNumber: phone }),
+  businessType: null,
+  setBusinessType: (type) => set({ businessType: type }),
+  userAnswers: {},
+  setUserAnswer: (key, answer) => set((state) => ({ userAnswers: { ...state.userAnswers, [key]: answer } })),
+  onboardingLoaded: false,
+  loadOnboardingFromStorage: async () => {
+    if (get().onboardingLoaded) return;
+    const data = await loadOnboarding();
+    if (data) {
+      set({
+        isOnboarded: data.isOnboarded ?? false,
+        phoneNumber: data.phoneNumber ?? '',
+        businessType: data.businessType ?? null,
+        userAnswers: data.userAnswers ?? {},
+        locale: data.locale || get().locale,
+        onboardingLoaded: true,
+      });
+    } else {
+      set({ onboardingLoaded: true });
+    }
+  },
+  completeOnboarding: () => {
+    set({ isOnboarded: true });
+    const current = get();
+    saveOnboarding({
+      isOnboarded: true,
+      phoneNumber: current.phoneNumber,
+      businessType: current.businessType,
+      userAnswers: current.userAnswers,
+      locale: current.locale,
+    });
+  },
+  resetOnboarding: () => {
+    set({ isOnboarded: false, phoneNumber: '', businessType: null, userAnswers: {} });
+    saveOnboarding({
+      isOnboarded: false,
+      phoneNumber: '',
+      businessType: null,
+      userAnswers: {},
+      locale: get().locale,
+    });
+  },
 
   selectedVillage: null,
   setVillage: (village) => set({ selectedVillage: village }),
