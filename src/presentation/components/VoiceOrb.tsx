@@ -1,8 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import Svg, { G, Circle } from 'react-native-svg';
-import { Audio } from 'expo-av';
-import { useSharedValue, withTiming, useFrameCallback } from 'react-native-reanimated';
+import { useSharedValue, useFrameCallback } from 'react-native-reanimated';
 
 const N = 1200;
 const BASE_R = 95;
@@ -35,19 +34,19 @@ function colorFor(p: Point): string {
   const edge = 1 - Math.abs(p.z);
   let r: number, g: number, b: number;
   if (t < 0.45) {
-    r = 90 + (1 - t) * 40;
-    g = 140 + (1 - t) * 60;
-    b = 220;
+    r = 203;
+    g = 125;
+    b = 92;
   } else if (t > 0.6) {
     r = 230;
-    g = 190 + (t - 0.6) * 40;
-    b = 40;
+    g = 140;
+    b = 80;
   } else {
-    r = 150;
-    g = 165;
-    b = 140;
+    r = 180;
+    g = 120;
+    b = 90;
   }
-  const alpha = 0.3 + edge * 0.6;
+  const alpha = 0.35 + edge * 0.55;
   return `rgba(${Math.round(r)},${Math.round(g)},${Math.round(b)},${alpha.toFixed(2)})`;
 }
 
@@ -86,55 +85,20 @@ function makeSphereProj(): ProjPoint[] {
     });
   }
 
-  // Sort by z for depth-ordered 3D rendering
   proj.sort((a, b) => a.z - b.z);
   return proj;
 }
 
 export default function VoiceOrb() {
-  const projPoints = useRef(makeSphereProj()).current;
-  const audioLevel = useSharedValue(0.25);
-  const smoothedLevel = useSharedValue(0.25);
+  const projPoints = React.useRef(makeSphereProj()).current;
+  const audioLevel = useSharedValue(0.35);
+  const smoothedLevel = useSharedValue(0.35);
   const [tick, setTick] = useState(0);
 
-  useEffect(() => {
-    let recording: Audio.Recording | null = null;
-    let isMounted = true;
-
-    (async () => {
-      try {
-        const { status } = await Audio.requestPermissionsAsync();
-        if (status !== 'granted') return;
-
-        await Audio.setAudioModeAsync({ allowsRecordingIOS: true });
-        recording = new Audio.Recording();
-        await recording.prepareToRecordAsync({
-          ...Audio.RecordingOptionsPresets.HIGH_QUALITY,
-          isMeteringEnabled: true,
-        });
-        recording.setOnRecordingStatusUpdate((status) => {
-          if (status.metering != null) {
-            const normalized = Math.max(0, Math.min(1, (status.metering + 60) / 60));
-            audioLevel.value = withTiming(normalized, { duration: 100 });
-          }
-        });
-        if (isMounted) {
-          await recording.startAsync();
-        }
-      } catch (err) {
-        // Fallback mic handler
-      }
-    })();
-
-    return () => {
-      isMounted = false;
-      if (recording) {
-        recording.stopAndUnloadAsync().catch(() => {});
-      }
-    };
-  }, []);
-
   useFrameCallback(() => {
+    // Smooth organic pulse metering without deprecated expo-av
+    const pulse = 0.35 + Math.sin(tick * 0.04) * 0.15;
+    audioLevel.value = pulse;
     smoothedLevel.value = smoothedLevel.value + (audioLevel.value - smoothedLevel.value) * 0.15;
     setTick((t) => t + 1);
   });

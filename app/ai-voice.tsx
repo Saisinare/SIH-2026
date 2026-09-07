@@ -9,31 +9,32 @@ import {
   Platform,
   Animated,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import VoiceOrb from '../src/presentation/components/VoiceOrb';
+import { useAzureLiveVoice } from '../src/presentation/hooks/useAzureLiveVoice';
 
 // Multilingual action titles ("What are we doing")
 const MULTILINGUAL_TITLES = [
-  { lang: 'English', text: 'Voice Business Guidance' },
-  { lang: 'हिंदी',   text: 'आवाज व्यवसाय मार्गदर्शन' },
   { lang: 'मराठी',   text: 'व्हॉइस व्यवसाय सल्ला' },
-  { lang: 'தமிழ்',  text: 'குரல் வணிக ஆலோசனை' },
-];
-
-// Simulated natural voice lines
-const VOICE_LINES = [
-  "Hello! How can I assist you with your business today?",
-  "नमस्ते! आज मैं आपके व्यवसाय से जुड़ी क्या मदद कर सकता हूँ?",
-  "नमस्कार! आज मी तुम्हाला व्यवसायाविषयी काय मदत करू शकेन?",
-  "I am analyzing your business plan. Please hold on...",
-  "कृपया मुझे अपने विचारों के बारे में विस्तार से बताएं।",
-  "I'm here to listen. Feel free to speak anytime.",
+  { lang: 'हिंदी',   text: 'आवाज व्यवसाय मार्गदर्शन' },
+  { lang: 'English', text: 'Voice Business Guidance' },
 ];
 
 export default function AiVoiceScreen() {
   const router = useRouter();
+  const {
+    isListening,
+    isProcessing,
+    transcript,
+    aiResponse,
+    statusText,
+    error,
+    toggleListening,
+    sendCustomPrompt,
+  } = useAzureLiveVoice();
 
   // ── Multilingual Header Title Animation ─────────────────────────────────────
   const [titleIndex, setTitleIndex] = useState(0);
@@ -56,31 +57,6 @@ export default function AiVoiceScreen() {
     }, 3000);
     return () => clearInterval(interval);
   }, []);
-
-  // ── Voice Line Cycling Animation ─────────────────────────────────────────────
-  const [speechIndex, setSpeechIndex] = useState(0);
-  const speechOpacity = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      Animated.timing(speechOpacity, {
-        toValue: 0,
-        duration: 400,
-        useNativeDriver: true,
-      }).start(() => {
-        setSpeechIndex((prev) => (prev + 1) % VOICE_LINES.length);
-        Animated.timing(speechOpacity, {
-          toValue: 1,
-          duration: 400,
-          useNativeDriver: true,
-        }).start();
-      });
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // ── Mic Toggle State ────────────────────────────────────────────────────────
-  const [isMicActive, setIsMicActive] = useState(false);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -111,67 +87,98 @@ export default function AiVoiceScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* ── MAIN CONTENT (FAINTED ORANGE THEME) ─────────────────────────── */}
+        {/* ── MAIN CONTENT ─────────────────────────────────────────────────── */}
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           bounces={false}
         >
-          {/* ── 2. AI SPHERE ───────────────────────────────────────────────── */}
+          {/* ── 2. AI ORB ─────────────────────────────────────────────────── */}
           <View style={styles.orbWrapper}>
             <VoiceOrb />
           </View>
 
-          {/* ── 3. SUBTITLE JUST BELOW THE SPHERE (NATURAL HUMAN STATUS) ───── */}
+          {/* ── 3. SUBTITLE JUST BELOW THE SPHERE (LIVE STATUS BADGE) ──────── */}
           <View style={styles.subtitleBadge}>
-            <View style={[styles.statusDot, isMicActive && styles.statusDotActive]} />
-            <Text style={styles.subtitleText}>
-              {isMicActive ? 'Listening to you...' : 'Speaking with you...'}
-            </Text>
+            <View
+              style={[
+                styles.statusDot,
+                isListening && styles.statusDotListening,
+                isProcessing && styles.statusDotProcessing,
+              ]}
+            />
+            <Text style={styles.subtitleText}>{statusText}</Text>
           </View>
 
-          {/* ── 4. WHAT IS BEING SPOKEN (NATURAL CAPTION WITHOUT BACKGROUND BOX) */}
+          {/* ── 4. USER TRANSCRIBED MARATHI SPEECH ──────────────────────────── */}
+          {transcript ? (
+            <View style={styles.userSpeechCard}>
+              <Text style={styles.userLabel}>तुम्ही बोललात:</Text>
+              <Text style={styles.userText}>"{transcript}"</Text>
+            </View>
+          ) : null}
+
+          {/* ── 5. UDYAM SAARTHI MARATHI AI RESPONSE ────────────────────────── */}
           <View style={styles.speechContainer}>
-            <Animated.Text style={[styles.darkBlackText, { opacity: speechOpacity }]}>
-              "{VOICE_LINES[speechIndex]}"
-            </Animated.Text>
+            {isProcessing ? (
+              <ActivityIndicator size="large" color="#BD5D38" />
+            ) : (
+              <Text style={styles.darkBlackText}>"{aiResponse}"</Text>
+            )}
           </View>
 
-          {/* ── 5. OTHER DETAILS IN LOW OPACITY (NATURAL & WARM) ───────────── */}
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+          {/* ── 6. MANUAL BUSINESS DETAILS INTAKE FORM BUTTON ──────────────── */}
+          <TouchableOpacity
+            style={styles.manualFormBtn}
+            activeOpacity={0.85}
+            onPress={() => router.push('/intake')}
+          >
+            <Ionicons name="create-outline" size={18} color="#BD5D38" />
+            <Text style={styles.manualFormBtnText}>व्यवसाय तपशील भरा (Manual Form)</Text>
+            <Ionicons name="chevron-forward" size={16} color="#BD5D38" />
+          </TouchableOpacity>
+
+          {/* ── 7. OTHER DETAILS IN LOW OPACITY ───────────────────────────── */}
           <View style={styles.lowOpacitySection}>
             <View style={styles.lowOpacityRow}>
               <Ionicons name="heart" size={13} color="#BD5D38" />
               <Text style={styles.lowOpacityText}>Udyam Saarthi · Voice Guidance</Text>
             </View>
             <Text style={styles.lowOpacitySubtext}>
-              Always here to guide your business journey
+              Always here to guide your business journey in Marathi
             </Text>
           </View>
         </ScrollView>
 
         {/* ── BOTTOM CONTROLS ──────────────────────────────────────────────── */}
         <View style={styles.bottomBar}>
-          <TouchableOpacity style={styles.secondaryBtn} activeOpacity={0.8}>
+          <TouchableOpacity
+            style={styles.secondaryBtn}
+            activeOpacity={0.8}
+            onPress={() => sendCustomPrompt("मला व्यवसायाविषयी मदत हवी आहे")}
+          >
             <Ionicons name="chatbubble-ellipses-outline" size={22} color="#7D5333" />
           </TouchableOpacity>
 
           {/* Glowing Fainted Orange Mic Button */}
           <TouchableOpacity
-            style={[styles.micOuter, isMicActive && styles.micOuterActive]}
+            style={[styles.micOuter, isListening && styles.micOuterActive]}
             activeOpacity={0.85}
-            onPress={() => setIsMicActive((prev) => !prev)}
+            onPress={toggleListening}
           >
-            <View style={[styles.micInner, isMicActive && styles.micInnerActive]}>
-              <Ionicons name={isMicActive ? "mic" : "mic-outline"} size={28} color="#FFFFFF" />
+            <View style={[styles.micInner, isListening && styles.micInnerActive]}>
+              <Ionicons name={isListening ? "mic" : "mic-outline"} size={28} color="#FFFFFF" />
             </View>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.secondaryBtn}
             activeOpacity={0.8}
-            onPress={() => router.back()}
+            onPress={() => router.push('/intake')}
           >
-            <Ionicons name="close" size={22} color="#7D5333" />
+            <Ionicons name="options-outline" size={22} color="#7D5333" />
           </TouchableOpacity>
         </View>
 
@@ -267,7 +274,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E6D4C2',
     marginTop: 4,
-    marginBottom: 18,
+    marginBottom: 14,
   },
   statusDot: {
     width: 8,
@@ -276,8 +283,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#BD5D38',
     marginRight: 8,
   },
-  statusDotActive: {
+  statusDotListening: {
     backgroundColor: '#10B981',
+  },
+  statusDotProcessing: {
+    backgroundColor: '#F59E0B',
   },
   subtitleText: {
     fontSize: 13,
@@ -286,14 +296,39 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
 
+  // ── Transcribed User Speech Card ───────────────────────────────────────────
+  userSpeechCard: {
+    backgroundColor: '#F3E9DF',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    marginBottom: 12,
+    maxWidth: '92%',
+    borderWidth: 1,
+    borderColor: '#E5D6C7',
+  },
+  userLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#BD5D38',
+    letterSpacing: 0.5,
+  },
+  userText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#3B2E2B',
+    marginTop: 2,
+  },
+
   // ── Caption Text (Pure Dark Black Text) ────────────────────────────────────
   speechContainer: {
     width: '100%',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    marginBottom: 20,
+    marginBottom: 16,
     alignItems: 'center',
     justifyContent: 'center',
+    minHeight: 60,
   },
   darkBlackText: {
     fontSize: 20,
@@ -302,6 +337,34 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 28,
     letterSpacing: -0.2,
+  },
+
+  errorText: {
+    fontSize: 12,
+    color: '#EF4444',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+
+  // ── Manual Form Button ────────────────────────────────────────────────────
+  manualFormBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#F5EBE0',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#E8DACC',
+    marginBottom: 16,
+    width: '92%',
+  },
+  manualFormBtnText: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#BD5D38',
   },
 
   // ── Other Things in Low Opacity ─────────────────────────────────────────────

@@ -166,7 +166,18 @@ export default function QuestionsScreen() {
 
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-          {/* ── 7. CONTINUE TO DASHBOARD BUTTON ─────────────────────────────── */}
+          {/* ── 7. MANUAL BUSINESS DETAILS INTAKE FORM BUTTON ──────────────── */}
+          <TouchableOpacity
+            style={styles.manualFormBtn}
+            activeOpacity={0.85}
+            onPress={() => router.push('/intake')}
+          >
+            <Ionicons name="create-outline" size={18} color="#BD5D38" />
+            <Text style={styles.manualFormBtnText}>व्यवसाय तपशील भरा (Manual Form)</Text>
+            <Ionicons name="chevron-forward" size={16} color="#BD5D38" />
+          </TouchableOpacity>
+
+          {/* ── 8. CONTINUE TO DASHBOARD BUTTON ─────────────────────────────── */}
           <TouchableOpacity
             style={styles.dashboardBtn}
             activeOpacity={0.88}
@@ -201,9 +212,9 @@ export default function QuestionsScreen() {
           <TouchableOpacity
             style={styles.secondaryBtn}
             activeOpacity={0.8}
-            onPress={handleGoToDashboard}
+            onPress={() => router.push('/intake')}
           >
-            <Ionicons name="checkmark" size={24} color="#7D5333" />
+            <Ionicons name="options-outline" size={22} color="#7D5333" />
           </TouchableOpacity>
         </View>
 
@@ -368,7 +379,7 @@ const styles = StyleSheet.create({
   // ── Quick Prompt Chips ─────────────────────────────────────────────────────
   promptChipsWrapper: {
     width: '100%',
-    marginBottom: 18,
+    marginBottom: 14,
     alignItems: 'center',
   },
   chipHeaderLabel: {
@@ -407,6 +418,27 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
+  // ── Manual Form Button ────────────────────────────────────────────────────
+  manualFormBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#F5EBE0',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#E8DACC',
+    marginBottom: 12,
+    width: '92%',
+  },
+  manualFormBtnText: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#BD5D38',
+  },
+
   // ── Go to Dashboard Primary Button ──────────────────────────────────────────
   dashboardBtn: {
     backgroundColor: '#BD5D38',
@@ -421,7 +453,7 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
     elevation: 4,
-    marginTop: 4,
+    marginTop: 2,
   },
   dashboardBtnText: {
     color: '#FFFFFF',
