@@ -1,0 +1,96 @@
+{
+  "sourceMeta": "Modeled on Agmarknet structure",
+  "description": "Monthly price trends for 5 agri-linked commodities over 12 months. Prices in INR per unit (litre/kg).",
+  "commodities": [
+    {
+      "name": "Milk",
+      "unit": "litre",
+      "monthlyPrices": [
+        {"month": "Jan", "price": 42},
+        {"month": "Feb", "price": 40},
+        {"month": "Mar", "price": 38},
+        {"month": "Apr", "price": 36},
+        {"month": "May", "price": 38},
+        {"month": "Jun", "price": 44},
+        {"month": "Jul", "price": 46},
+        {"month": "Aug", "price": 48},
+        {"month": "Sep", "price": 46},
+        {"month": "Oct", "price": 44},
+        {"month": "Nov", "price": 42},
+        {"month": "Dec", "price": 43}
+      ]
+    },
+    {
+      "name": "Poultry",
+      "unit": "kg",
+      "monthlyPrices": [
+        {"month": "Jan", "price": 180},
+        {"month": "Feb", "price": 170},
+        {"month": "Mar", "price": 160},
+        {"month": "Apr", "price": 150},
+        {"month": "May", "price": 140},
+        {"month": "Jun", "price": 155},
+        {"month": "Jul", "price": 175},
+        {"month": "Aug", "price": 190},
+        {"month": "Sep", "price": 200},
+        {"month": "Oct", "price": 210},
+        {"month": "Nov", "price": 220},
+        {"month": "Dec", "price": 195}
+      ]
+    },
+    {
+      "name": "Wheat",
+      "unit": "kg",
+      "monthlyPrices": [
+        {"month": "Jan", "price": 28},
+        {"month": "Feb", "price": 27},
+        {"month": "Mar", "price": 25},
+        {"month": "Apr", "price": 22},
+        {"month": "May", "price": 21},
+        {"month": "Jun", "price": 23},
+        {"month": "Jul", "price": 26},
+        {"month": "Aug", "price": 28},
+        {"month": "Sep", "price": 30},
+        {"month": "Oct", "price": 31},
+        {"month": "Nov", "price": 30},
+        {"month": "Dec", "price": 29}
+      ]
+    },
+    {
+      "name": "Cotton",
+      "unit": "kg",
+      "monthlyPrices": [
+        {"month": "Jan", "price": 62},
+        {"month": "Feb", "price": 60},
+        {"month": "Mar", "price": 58},
+        {"month": "Apr", "price": 55},
+        {"month": "May", "price": 52},
+        {"month": "Jun", "price": 48},
+        {"month": "Jul", "price": 50},
+        {"month": "Aug", "price": 55},
+        {"month": "Sep", "price": 60},
+        {"month": "Oct", "price": 68},
+        {"month": "Nov", "price": 72},
+        {"month": "Dec", "price": 65}
+      ]
+    },
+    {
+      "name": "Vegetables",
+      "unit": "kg",
+      "monthlyPrices": [
+        {"month": "Jan", "price": 30},
+        {"month": "Feb", "price": 25},
+        {"month": "Mar", "price": 20},
+        {"month": "Apr", "price": 18},
+        {"month": "May", "price": 22},
+        {"month": "Jun", "price": 35},
+        {"month": "Jul", "price": 45},
+        {"month": "Aug", "price": 50},
+        {"month": "Sep", "price": 40},
+        {"month": "Oct", "price": 28},
+        {"month": "Nov", "price": 25},
+        {"month": "Dec", "price": 28}
+      ]
+    }
+  ]
+}

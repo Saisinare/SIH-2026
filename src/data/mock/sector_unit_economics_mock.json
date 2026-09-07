@@ -1,0 +1,83 @@
+{
+  "sourceMeta": "Illustrative unit-economics benchmarks",
+  "description": "Per-sector financial benchmarks for viability computation. All figures in INR per month unless noted.",
+  "sectors": [
+    {
+      "sector": "Kirana Store",
+      "avgMonthlyRevenue": 80000,
+      "revenueRangeMin": 40000,
+      "revenueRangeMax": 150000,
+      "opexPercent": 78,
+      "ownersMonthlyDrawing": 8000,
+      "minViableCapital": 50000,
+      "isAgriPriceSensitive": false,
+      "linkedCommodities": []
+    },
+    {
+      "sector": "Dairy",
+      "avgMonthlyRevenue": 60000,
+      "revenueRangeMin": 30000,
+      "revenueRangeMax": 120000,
+      "opexPercent": 65,
+      "ownersMonthlyDrawing": 7000,
+      "minViableCapital": 80000,
+      "isAgriPriceSensitive": true,
+      "linkedCommodities": ["Milk"]
+    },
+    {
+      "sector": "Poultry",
+      "avgMonthlyRevenue": 55000,
+      "revenueRangeMin": 25000,
+      "revenueRangeMax": 100000,
+      "opexPercent": 70,
+      "ownersMonthlyDrawing": 6000,
+      "minViableCapital": 60000,
+      "isAgriPriceSensitive": true,
+      "linkedCommodities": ["Poultry"]
+    },
+    {
+      "sector": "Tailoring",
+      "avgMonthlyRevenue": 25000,
+      "revenueRangeMin": 12000,
+      "revenueRangeMax": 50000,
+      "opexPercent": 35,
+      "ownersMonthlyDrawing": 5000,
+      "minViableCapital": 20000,
+      "isAgriPriceSensitive": false,
+      "linkedCommodities": []
+    },
+    {
+      "sector": "Handicrafts",
+      "avgMonthlyRevenue": 20000,
+      "revenueRangeMin": 8000,
+      "revenueRangeMax": 45000,
+      "opexPercent": 40,
+      "ownersMonthlyDrawing": 5000,
+      "minViableCapital": 15000,
+      "isAgriPriceSensitive": false,
+      "linkedCommodities": []
+    },
+    {
+      "sector": "Agri-Input Shop",
+      "avgMonthlyRevenue": 70000,
+      "revenueRangeMin": 35000,
+      "revenueRangeMax": 140000,
+      "opexPercent": 75,
+      "ownersMonthlyDrawing": 8000,
+      "minViableCapital": 100000,
+      "isAgriPriceSensitive": true,
+      "linkedCommodities": ["Wheat", "Cotton"]
+    },
+    {
+      "sector": "Flour Mill",
+      "avgMonthlyRevenue": 45000,
+      "revenueRangeMin": 20000,
+      "revenueRangeMax": 80000,
+      "opexPercent": 55,
+      "ownersMonthlyDrawing": 6000,
+      "minViableCapital": 70000,
+      "isAgriPriceSensitive": true,
+      "linkedCommodities": ["Wheat"]
+    }
+  ]
+}

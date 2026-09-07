@@ -1,0 +1,111 @@
+{
+  "sourceMeta": "Modeled on NBCFDC/NABARD/PMEGP published terms",
+  "description": "Government loan scheme rules for micro-enterprise financing. Modeled on real schemes with fictional names for demo.",
+  "schemes": [
+    {
+      "id": "SCH001",
+      "name": "PM Employment Generation Programme (PMEGP-style)",
+      "shortName": "PMEGP",
+      "maxLoanAmount": 2500000,
+      "minLoanAmount": 50000,
+      "tenureYears": 5,
+      "interestRatePercent": 11.0,
+      "subsidyPercent": 25,
+      "subsidyPercentRural": 35,
+      "eligibleSectors": ["Kirana Store", "Dairy", "Poultry", "Tailoring", "Handicrafts", "Agri-Input Shop", "Flour Mill"],
+      "eligibilityFlags": {
+        "minAge": 18,
+        "maxAge": 65,
+        "educationRequired": "8th pass",
+        "womenOnly": false,
+        "scStOnly": false,
+        "existingBusiness": false
+      },
+      "description": "Flagship scheme for setting up micro-enterprises. Higher subsidy (35%) for rural areas."
+    },
+    {
+      "id": "SCH002",
+      "name": "Mudra Loan — Shishu",
+      "shortName": "Mudra Shishu",
+      "maxLoanAmount": 50000,
+      "minLoanAmount": 5000,
+      "tenureYears": 3,
+      "interestRatePercent": 10.0,
+      "subsidyPercent": 0,
+      "subsidyPercentRural": 0,
+      "eligibleSectors": ["Kirana Store", "Dairy", "Poultry", "Tailoring", "Handicrafts", "Agri-Input Shop", "Flour Mill"],
+      "eligibilityFlags": {
+        "minAge": 18,
+        "maxAge": 65,
+        "educationRequired": "none",
+        "womenOnly": false,
+        "scStOnly": false,
+        "existingBusiness": false
+      },
+      "description": "For micro-units needing small working capital up to ₹50,000. No collateral, no subsidy."
+    },
+    {
+      "id": "SCH003",
+      "name": "Mudra Loan — Kishor",
+      "shortName": "Mudra Kishor",
+      "maxLoanAmount": 500000,
+      "minLoanAmount": 50001,
+      "tenureYears": 5,
+      "interestRatePercent": 10.5,
+      "subsidyPercent": 0,
+      "subsidyPercentRural": 0,
+      "eligibleSectors": ["Kirana Store", "Dairy", "Poultry", "Tailoring", "Handicrafts", "Agri-Input Shop", "Flour Mill"],
+      "eligibilityFlags": {
+        "minAge": 18,
+        "maxAge": 65,
+        "educationRequired": "none",
+        "womenOnly": false,
+        "scStOnly": false,
+        "existingBusiness": false
+      },
+      "description": "For growing micro-enterprises needing ₹50,001 to ₹5,00,000."
+    },
+    {
+      "id": "SCH004",
+      "name": "NABARD Dairy Entrepreneurship Scheme",
+      "shortName": "NABARD Dairy",
+      "maxLoanAmount": 700000,
+      "minLoanAmount": 50000,
+      "tenureYears": 7,
+      "interestRatePercent": 9.5,
+      "subsidyPercent": 25,
+      "subsidyPercentRural": 33,
+      "eligibleSectors": ["Dairy"],
+      "eligibilityFlags": {
+        "minAge": 18,
+        "maxAge": 60,
+        "educationRequired": "none",
+        "womenOnly": false,
+        "scStOnly": false,
+        "existingBusiness": false
+      },
+      "description": "Sector-specific scheme for dairy enterprises with capital subsidy up to 33% for rural applicants."
+    },
+    {
+      "id": "SCH005",
+      "name": "Stand-Up India (Women/SC-ST)",
+      "shortName": "Stand-Up India",
+      "maxLoanAmount": 10000000,
+      "minLoanAmount": 1000000,
+      "tenureYears": 7,
+      "interestRatePercent": 9.0,
+      "subsidyPercent": 0,
+      "subsidyPercentRural": 0,
+      "eligibleSectors": ["Kirana Store", "Dairy", "Poultry", "Tailoring", "Handicrafts", "Agri-Input Shop", "Flour Mill"],
+      "eligibilityFlags": {
+        "minAge": 18,
+        "maxAge": 65,
+        "educationRequired": "none",
+        "womenOnly": true,
+        "scStOnly": true,
+        "existingBusiness": false
+      },
+      "description": "For women and SC/ST entrepreneurs, loans ₹10 lakh to ₹1 crore for greenfield enterprises."
+    }
+  ]
+}

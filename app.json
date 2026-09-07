@@ -20,6 +20,16 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "scheme": "udyam-saarthi",
+    "plugins": [
+      [
+        "expo-router",
+        {
+          "root": "./app"
+        }
+      ],
+      "@react-native-voice/voice"
+    ]
   }
 }

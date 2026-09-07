@@ -1,0 +1,54 @@
+{
+  "sourceMeta": "Modeled on NABARD Potential Linked Credit Plan structure",
+  "description": "District-level sector-wise credit potential for ranking alternative sectors when primary choice is saturated.",
+  "districts": [
+    {
+      "district": "Satvara",
+      "sectorPotential": [
+        {"sector": "Kirana Store", "creditPotentialLakhs": 45, "growthRating": "Low"},
+        {"sector": "Dairy", "creditPotentialLakhs": 120, "growthRating": "High"},
+        {"sector": "Poultry", "creditPotentialLakhs": 80, "growthRating": "Medium"},
+        {"sector": "Tailoring", "creditPotentialLakhs": 35, "growthRating": "Medium"},
+        {"sector": "Handicrafts", "creditPotentialLakhs": 55, "growthRating": "High"},
+        {"sector": "Agri-Input Shop", "creditPotentialLakhs": 95, "growthRating": "Medium"},
+        {"sector": "Flour Mill", "creditPotentialLakhs": 60, "growthRating": "Medium"}
+      ]
+    },
+    {
+      "district": "Nandgiri",
+      "sectorPotential": [
+        {"sector": "Kirana Store", "creditPotentialLakhs": 50, "growthRating": "Low"},
+        {"sector": "Dairy", "creditPotentialLakhs": 140, "growthRating": "High"},
+        {"sector": "Poultry", "creditPotentialLakhs": 90, "growthRating": "High"},
+        {"sector": "Tailoring", "creditPotentialLakhs": 40, "growthRating": "Medium"},
+        {"sector": "Handicrafts", "creditPotentialLakhs": 30, "growthRating": "Low"},
+        {"sector": "Agri-Input Shop", "creditPotentialLakhs": 85, "growthRating": "Medium"},
+        {"sector": "Flour Mill", "creditPotentialLakhs": 70, "growthRating": "High"}
+      ]
+    },
+    {
+      "district": "Jalnagar",
+      "sectorPotential": [
+        {"sector": "Kirana Store", "creditPotentialLakhs": 40, "growthRating": "Low"},
+        {"sector": "Dairy", "creditPotentialLakhs": 100, "growthRating": "Medium"},
+        {"sector": "Poultry", "creditPotentialLakhs": 75, "growthRating": "Medium"},
+        {"sector": "Tailoring", "creditPotentialLakhs": 60, "growthRating": "High"},
+        {"sector": "Handicrafts", "creditPotentialLakhs": 85, "growthRating": "High"},
+        {"sector": "Agri-Input Shop", "creditPotentialLakhs": 70, "growthRating": "Low"},
+        {"sector": "Flour Mill", "creditPotentialLakhs": 50, "growthRating": "Medium"}
+      ]
+    },
+    {
+      "district": "Khetpur",
+      "sectorPotential": [
+        {"sector": "Kirana Store", "creditPotentialLakhs": 55, "growthRating": "Low"},
+        {"sector": "Dairy", "creditPotentialLakhs": 130, "growthRating": "High"},
+        {"sector": "Poultry", "creditPotentialLakhs": 110, "growthRating": "High"},
+        {"sector": "Tailoring", "creditPotentialLakhs": 45, "growthRating": "Medium"},
+        {"sector": "Handicrafts", "creditPotentialLakhs": 40, "growthRating": "Medium"},
+        {"sector": "Agri-Input Shop", "creditPotentialLakhs": 100, "growthRating": "High"},
+        {"sector": "Flour Mill", "creditPotentialLakhs": 65, "growthRating": "Medium"}
+      ]
+    }
+  ]
+}
