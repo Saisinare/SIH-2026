@@ -4,11 +4,12 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
+
   StatusBar,
   Image,
   Dimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAppStore } from '../../src/presentation/store/app-store';
 import ExistingBusinessSvg from './components/ExistingBusinessSvg';

@@ -5,8 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 
 const TABS = [
   { name: 'index',    label: 'Home',     icon: 'home-outline', activeIcon: 'home' },
-  { name: 'insights', label: 'DMs',      icon: 'chatbubbles-outline', activeIcon: 'chatbubbles' },
-  { name: 'history',  label: 'Activity', icon: 'notifications-outline', activeIcon: 'notifications' },
+  { name: 'intakeAction', label: 'Analysis', icon: 'analytics-outline', activeIcon: 'analytics', isAction: true },
+  { name: 'history',  label: 'History',  icon: 'time-outline', activeIcon: 'time' },
   { name: 'settings', label: 'More',     icon: 'ellipsis-horizontal', activeIcon: 'ellipsis-horizontal' },
 ];
 
@@ -17,12 +17,18 @@ function CustomTabBar({ state, navigation }: any) {
     <View style={styles.navWrapper}>
       <View style={styles.pillBar}>
         {TABS.map((tab, index) => {
-          const isFocused = state.index === index;
+          const routeIndex = state.routes.findIndex((r: any) => r.name === tab.name);
+          const isFocused = routeIndex !== -1 && state.index === routeIndex;
 
           const onPress = () => {
+            if (tab.isAction) {
+              router.push('/intake');
+              return;
+            }
+
             const event = navigation.emit({
               type: 'tabPress',
-              target: state.routes[index]?.key,
+              target: state.routes[routeIndex]?.key,
               canPreventDefault: true,
             });
 
@@ -69,7 +75,7 @@ export default function TabLayout() {
       tabBar={(props) => <CustomTabBar {...props} />}
     >
       <Tabs.Screen name="index" options={{ title: 'Home' }} />
-      <Tabs.Screen name="insights" options={{ title: 'DMs' }} />
+      <Tabs.Screen name="insights" options={{ href: null }} />
       <Tabs.Screen name="history" options={{ title: 'Activity' }} />
       <Tabs.Screen name="settings" options={{ title: 'More' }} />
     </Tabs>

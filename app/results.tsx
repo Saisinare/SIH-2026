@@ -5,11 +5,12 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView,
+
   StatusBar,
   Platform,
   Share,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppStore } from '../src/presentation/store/app-store';
@@ -22,7 +23,7 @@ const COLORS = {
   textSecondary: '#5A4E44',
   textMuted: '#8A7B6F',
   accent: '#BD5D38',
-  teal: '#0F766E',
+  accent: '#BD5D38',
   green: '#10B981',
   amber: '#D97706',
   red: '#EF4444',
@@ -185,7 +186,7 @@ export default function ResultsScreen() {
   // ── 2. VIABILITY REPORT SCREEN (Matching All Screenshots Dynamically)
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#0F766E" />
+      <StatusBar barStyle="light-content" backgroundColor="#BD5D38" />
 
       {/* Top Navigation Bar */}
       <View style={styles.topHeader}>
@@ -828,7 +829,7 @@ const styles = StyleSheet.create({
 
   // Viability Report Header
   topHeader: {
-    backgroundColor: '#0F766E',
+    backgroundColor: '#BD5D38',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',

@@ -9,10 +9,11 @@ import {
   Alert,
   ScrollView,
   Switch,
-  SafeAreaView,
+
   StatusBar,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppStore } from '../src/presentation/store/app-store';
@@ -30,7 +31,7 @@ const COLORS = {
   accent: '#BD5D38',
   accentLight: '#F3E8DA',
   green: '#10B981',
-  headerBg: '#0F766E', // Teal green top header like image
+  headerBg: '#BD5D38', // Teal green top header like image
 };
 
 export default function IntakeScreen() {
@@ -149,7 +150,7 @@ export default function IntakeScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#0F766E" />
+      <StatusBar barStyle="light-content" backgroundColor="#BD5D38" />
 
       {/* ── TOP HEADER (Matching Image 1 & 2) ─────────────────────────── */}
       <View style={styles.topHeader}>
@@ -439,7 +440,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.bg,
   },
   topHeader: {
-    backgroundColor: '#0F766E',
+    backgroundColor: '#BD5D38',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -556,14 +557,14 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 16,
-    backgroundColor: '#0F766E',
+    backgroundColor: '#BD5D38',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#0F766E',
+    shadowColor: '#BD5D38',
     shadowOpacity: 0.25,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 3 },
-    elevation: 3,
+    elevation: 2,
   },
 
   suggestionBox: {
@@ -594,7 +595,7 @@ const styles = StyleSheet.create({
   selectedHint: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#0F766E',
+    color: '#BD5D38',
     marginTop: 6,
   },
 
@@ -615,8 +616,8 @@ const styles = StyleSheet.create({
     borderColor: COLORS.cardBorder,
   },
   sectorChipActive: {
-    backgroundColor: '#0F766E',
-    borderColor: '#0F766E',
+    backgroundColor: '#BD5D38',
+    borderColor: '#BD5D38',
   },
   sectorChipText: {
     fontSize: 13,
@@ -638,7 +639,7 @@ const styles = StyleSheet.create({
   amountDisplay: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#0F766E',
+    color: '#BD5D38',
   },
   sliderContainer: {
     flexDirection: 'row',
@@ -700,15 +701,15 @@ const styles = StyleSheet.create({
 
   // Analyze Button
   analyzeBtn: {
-    backgroundColor: '#0F766E',
+    backgroundColor: '#BD5D38',
     paddingVertical: 16,
     borderRadius: 18,
     alignItems: 'center',
-    shadowColor: '#0F766E',
+    shadowColor: '#BD5D38',
     shadowOpacity: 0.3,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
+    elevation: 2,
   },
   analyzeBtnContent: {
     flexDirection: 'row',

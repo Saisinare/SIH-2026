@@ -1,6 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Platform } from 'react-native';
-import Voice from '@react-native-voice/voice';
+
+// @react-native-voice/voice requires a development build (not available in Expo Go)
+let Voice: typeof import('@react-native-voice/voice').default | null = null;
+try {
+  Voice = require('@react-native-voice/voice').default;
+} catch (_) {
+  // Expo Go: voice recognition unavailable — UI falls back gracefully
+}
 import { geminiService } from '../../data/services/gemini-service';
 
 export interface UseAzureLiveVoiceReturn {

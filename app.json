@@ -29,7 +29,8 @@
           "root": "./app"
         }
       ],
-      "@react-native-voice/voice"
+      "@react-native-voice/voice",
+      "expo-status-bar"
     ]
   }
 }
