@@ -17,17 +17,20 @@ export class RiskEngine {
     try {
       const infraGaps: string[] = [];
 
-      if (!village.roadAccess) {
+      // An absent infrastructure field means "not measured here", which is not
+      // the same as "fine" — so it raises no gap and fabricates no reassurance.
+      // The real audit comes back inside the /advise envelope's risk flags.
+      if (village.roadAccess === false) {
         infraGaps.push(
           'Unpaved road access may impact delivery logistics and raw material freight.'
         );
       }
-      if (village.powerReliability < 60) {
+      if (village.powerReliability !== undefined && village.powerReliability < 60) {
         infraGaps.push(
           `Power reliability is ${village.powerReliability}% — continuous electricity operations will require generator/solar backup.`
         );
       }
-      if (village.marketAccessScore < 50) {
+      if (village.marketAccessScore !== undefined && village.marketAccessScore < 50) {
         infraGaps.push(
           `Market access score is ${village.marketAccessScore}/100 — distant secondary markets may increase distribution time.`
         );

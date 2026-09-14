@@ -23,7 +23,7 @@ const COLORS = {
   textSecondary: '#5A4E44',
   textMuted: '#8A7B6F',
   accent: '#BD5D38',
-  accent: '#BD5D38',
+  teal: '#BD5D38',
   green: '#10B981',
   amber: '#D97706',
   red: '#EF4444',
@@ -35,7 +35,7 @@ const PIPELINE_STEPS = [
   'स्पर्धा घनता आणि बाजारपेठ संपृक्तता गुणांकन...',
   'नाबार्ड, मुद्रा आणि पीएमईजीपी योजनांची तपासणी...',
   'मासिक नफा आणि सुरक्षित हप्ता मर्यादा गणित...',
-  '१०० परिस्थितींमध्ये महसूल आणि बाजारभाव ताण चाचणी...',
+  '१,००० परिस्थितींमध्ये महसूल आणि बाजारभाव ताण चाचणी...',
   'रस्ते आणि वीज पायाभूत सुविधा जोखीम तपासणी...',
   'अंतिम अधिकृत निष्कर्ष आणि ऑडिओ सल्ला तयार होत आहे...',
 ];
@@ -46,6 +46,7 @@ export default function ResultsScreen() {
 
   const [activeTab, setActiveTab] = useState<'Overview' | 'Market' | 'Cashflow' | 'Scheme' | 'Risk'>('Overview');
   const [pipelineProgress, setPipelineProgress] = useState(0);
+  const [showSources, setShowSources] = useState(false);
   const [isVerifying, setIsVerifying] = useState(true);
 
   // ── 8-Stage Deterministic Pipeline Loading Animation ───────────────
@@ -89,25 +90,30 @@ export default function ResultsScreen() {
     } catch (_) {}
   };
 
-  // Dynamic calculations from verdict
-  const saturationPercent = Math.min(
-    100,
-    Math.max(10, Math.round((verdict.market.saturationScore || 0.394) * 100 * 10) / 10)
-  );
+  // Dynamic calculations from verdict.
+  // No default values here: every one of these is a measured number from the
+  // backend, and a placeholder would be indistinguishable from a real reading.
+  const saturationPercent = Math.round(
+    Math.min(100, Math.max(0, verdict.market.saturationScore * 100)) * 10
+  ) / 10;
+
+  // -1 means the backend genuinely did not measure a shop count for this
+  // sector (procurement sectors are scored on capacity, not competitors).
+  const competitorsMeasured = verdict.market.competitorCount >= 0;
+  const competitorText = competitorsMeasured
+    ? String(verdict.market.competitorCount)
+    : 'not measured';
 
   const recommendedRatio = Math.min(
     100,
-    Math.max(
-      15,
-      Math.round(
-        (verdict.affordability.recommendedLoanAmount /
-          Math.max(1, verdict.affordability.requestedLoanAmount)) *
-          100
-      )
+    Math.round(
+      (verdict.affordability.recommendedLoanAmount /
+        Math.max(1, verdict.affordability.requestedLoanAmount)) *
+        100
     )
   );
 
-  const stressPassRatePercent = Math.round((verdict.risk.stressTestPassRate || 1) * 100);
+  const stressPassRatePercent = Math.round(verdict.risk.stressTestPassRate * 100);
 
   const netInterestRate =
     verdict.scheme.interestRate - verdict.scheme.interestSubsidy > 0
@@ -248,7 +254,7 @@ export default function ResultsScreen() {
                 {verdict.sector} • {verdict.villageName}
               </Text>
               <Text style={styles.bannerSub}>
-                District: {verdict.district || 'Satvara'} • Loan Req: ₹{verdict.affordability.requestedLoanAmount.toLocaleString('en-IN')}
+                District: {verdict.district} • Loan Req: ₹{verdict.affordability.requestedLoanAmount.toLocaleString('en-IN')}
               </Text>
             </View>
 
@@ -266,7 +272,8 @@ export default function ResultsScreen() {
                 <Text style={styles.moduleMetricValue}>{saturationPercent}%</Text>
                 <Text style={styles.moduleMetricLabel}>Market Density</Text>
                 <Text style={styles.moduleMetricSub}>
-                  {verdict.market.saturationLevel} ({verdict.market.competitorCount} comp.)
+                  {verdict.market.saturationLevel}
+                  {competitorsMeasured ? ` (${verdict.market.competitorCount} comp.)` : ''}
                 </Text>
               </TouchableOpacity>
 
@@ -373,7 +380,11 @@ export default function ResultsScreen() {
             <View style={styles.sideBySideRow}>
               <View style={styles.sideCard}>
                 <Text style={styles.sideCardLabel}>Active Competitors</Text>
-                <Text style={styles.sideCardMetric}>{verdict.market.competitorCount}</Text>
+                <Text
+                  style={[styles.sideCardMetric, !competitorsMeasured && styles.metricUnmeasured]}
+                >
+                  {competitorText}
+                </Text>
                 <Text style={styles.sideCardSub}>Within 8km catchment</Text>
               </View>
 
@@ -413,7 +424,7 @@ export default function ResultsScreen() {
               <View style={styles.profileDataRow}>
                 <Text style={styles.profileDataLabel}>Catchment Population (8km):</Text>
                 <Text style={styles.profileDataValue}>
-                  {(verdict.market.populationInRadius || 28300).toLocaleString('en-IN')}
+                  {verdict.market.populationInRadius.toLocaleString('en-IN')}
                 </Text>
               </View>
               <View style={styles.dividerLight} />
@@ -647,7 +658,7 @@ export default function ResultsScreen() {
             {/* Dynamic Stress Test Pass Rate Card */}
             <View style={styles.detailCard}>
               <View style={styles.gaugeHeader}>
-                <Text style={styles.gaugeTitle}>100-Scenario Stress Test Pass Rate:</Text>
+                <Text style={styles.gaugeTitle}>1,000-Scenario Stress Test Pass Rate:</Text>
                 <Text style={[styles.gaugeValue, { color: stressPassRatePercent >= 80 ? COLORS.teal : COLORS.amber, fontSize: 20 }]}>
                   {stressPassRatePercent}%
                 </Text>
@@ -693,21 +704,56 @@ export default function ResultsScreen() {
             <View style={styles.sourceFootnoteRow}>
               <Ionicons name="checkmark-circle-outline" size={14} color={COLORS.teal} />
               <Text style={styles.sourceFootnoteText}>
-                Source: Agmarknet Mandi Price Series & Population Census Infrastructure Baselines
+                Infrastructure flags come from the Village Directory (Census 2011, via SHRUG);
+                the stress test is a Monte Carlo run on this village's own cashflow.
               </Text>
             </View>
           </View>
         )}
 
-        {/* ── AUDIT BADGE & BOTTOM BUTTONS (PERMANENT) ───────────────── */}
-        <View style={styles.auditCard}>
+        {/* ── PROVENANCE (PERMANENT) ─────────────────────────────────── */}
+        <TouchableOpacity
+          style={styles.auditCard}
+          activeOpacity={0.85}
+          onPress={() => setShowSources((v) => !v)}
+        >
           <Ionicons name="information-circle-outline" size={20} color={COLORS.teal} />
           <View style={{ flex: 1 }}>
-            <Text style={styles.auditTitle}>Data Sources & Governance Audit</Text>
-            <Text style={styles.auditSub}>Verified via MoSPI, Census, NABARD & KVIC rules</Text>
+            <Text style={styles.auditTitle}>Where these numbers come from</Text>
+            <Text style={styles.auditSub}>
+              {verdict.sourcesUsed.length} source
+              {verdict.sourcesUsed.length === 1 ? '' : 's'} cited
+              {showSources ? '' : ' · tap to read'}
+            </Text>
           </View>
-          <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
-        </View>
+          <Ionicons
+            name={showSources ? 'chevron-down' : 'chevron-forward'}
+            size={16}
+            color={COLORS.textMuted}
+          />
+        </TouchableOpacity>
+
+        {showSources ? (
+          <View style={styles.sourceListCard}>
+            {verdict.sourcesUsed.length === 0 ? (
+              <Text style={styles.sourceListItem}>
+                This assessment carried no source list — treat it as unverified.
+              </Text>
+            ) : (
+              verdict.sourcesUsed.map((src, i) => (
+                <View key={i} style={styles.sourceListRow}>
+                  <Text style={styles.sourceBullet}>•</Text>
+                  <Text style={styles.sourceListItem}>{src}</Text>
+                </View>
+              ))
+            )}
+            {verdict.runId ? (
+              <Text style={styles.runIdText}>
+                Run ID {verdict.runId} — quote this to reproduce the exact same result.
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
 
         <View style={styles.bottomActionRow}>
           <TouchableOpacity style={styles.shareBtn} onPress={handleShare}>
@@ -1197,6 +1243,40 @@ const styles = StyleSheet.create({
     backgroundColor: '#E0F2FE',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  sourceListCard: {
+    backgroundColor: COLORS.cardBg,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: COLORS.cardBorder,
+    padding: 14,
+    marginBottom: 14,
+  },
+  sourceListRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 8,
+  },
+  sourceBullet: {
+    color: COLORS.accent,
+    fontWeight: '800',
+  },
+  sourceListItem: {
+    flex: 1,
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    lineHeight: 18,
+  },
+  runIdText: {
+    fontSize: 11,
+    color: COLORS.textMuted,
+    marginTop: 6,
+    fontStyle: 'italic',
+  },
+  metricUnmeasured: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.textMuted,
   },
   schemeNameTitle: {
     fontSize: 16,

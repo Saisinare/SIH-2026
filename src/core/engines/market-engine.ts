@@ -44,6 +44,17 @@ export class MarketEngine {
     radiusKm: number = AppConstants.defaultRadiusKm
   ): Promise<Result<MarketAnalysisResult>> {
     try {
+      // Without coordinates there is no catchment to compute. The offline
+      // engine says so rather than guessing a radius around nothing — the
+      // online path (/advise) does this properly against PostGIS.
+      if (village.lat === undefined || village.lng === undefined) {
+        return Failure(
+          new Error(
+            'This village has no coordinates in the offline dataset, so a catchment cannot be computed without the backend.'
+          )
+        );
+      }
+
       const villagesResult = await this.villageRepository.getVillagesInRadius(
         village.lat,
         village.lng,

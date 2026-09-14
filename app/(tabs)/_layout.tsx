@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 const TABS = [
   { name: 'index',    label: 'Home',     icon: 'home-outline', activeIcon: 'home' },
   { name: 'intakeAction', label: 'Analysis', icon: 'analytics-outline', activeIcon: 'analytics', isAction: true },
+  { name: 'insights', label: 'Insights', icon: 'library-outline', activeIcon: 'library' },
   { name: 'history',  label: 'History',  icon: 'time-outline', activeIcon: 'time' },
   { name: 'settings', label: 'More',     icon: 'ellipsis-horizontal', activeIcon: 'ellipsis-horizontal' },
 ];
@@ -75,7 +76,7 @@ export default function TabLayout() {
       tabBar={(props) => <CustomTabBar {...props} />}
     >
       <Tabs.Screen name="index" options={{ title: 'Home' }} />
-      <Tabs.Screen name="insights" options={{ href: null }} />
+      <Tabs.Screen name="insights" options={{ title: 'Insights' }} />
       <Tabs.Screen name="history" options={{ title: 'Activity' }} />
       <Tabs.Screen name="settings" options={{ title: 'More' }} />
     </Tabs>

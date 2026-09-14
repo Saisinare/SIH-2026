@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { VerdictResult } from '../../domain/models/engine-results';
+import { Assessment } from '../../data/services/assessment-service';
 import { Village } from '../../domain/models/village';
 import { AssessmentRecord } from '../../domain/models/assessment-record';
 
@@ -97,8 +97,11 @@ interface AppState {
   setIsScSt: (val: boolean) => void;
 
   // Active verdict
-  verdict: VerdictResult | null;
-  setVerdict: (verdict: VerdictResult | null) => void;
+  // The full backend assessment, not just the flattened verdict: run_id,
+  // narration and the provenance-carrying envelope must stay reachable from
+  // the screens that have to show where a number came from.
+  verdict: Assessment | null;
+  setVerdict: (verdict: Assessment | null) => void;
 
   // Loading state
   isLoading: boolean;

@@ -50,7 +50,12 @@ export class MockVillageRepository implements VillageRepository {
     const all = await this.loadAll();
     if (!all.success) return all;
     try {
-      const inRadius = all.data.filter((v) => calculateDistance(lat, lng, v.lat, v.lng) <= radiusKm);
+      const inRadius = all.data.filter(
+        (v) =>
+          v.lat !== undefined &&
+          v.lng !== undefined &&
+          calculateDistance(lat, lng, v.lat, v.lng) <= radiusKm
+      );
       return Success(inRadius);
     } catch (e) {
       return Failure(new Error(`Failed to query villages in radius: ${e}`));

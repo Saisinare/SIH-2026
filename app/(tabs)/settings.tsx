@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
-  Switch, TouchableOpacity, Platform, StatusBar,
+  Switch, TouchableOpacity, Platform, StatusBar, ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppStore } from '../../src/presentation/store/app-store';
+import { apiClient, ApiRun } from '../../src/data/services/api-client';
 
 const COLORS = {
   bg:            '#FAF0E6',
@@ -37,6 +38,30 @@ export default function SettingsScreen() {
   } = useAppStore();
 
   useEffect(() => { loadBookmarksFromStorage(); }, []);
+
+  // Officer view lists the backend's own run log. It previously showed three
+  // invented applicants ("Suresh Patil", "Anita Devi", …) with invented
+  // villages, amounts and verdicts — a review queue of people who do not
+  // exist is the worst possible thing to put in front of a loan officer.
+  const [runs, setRuns] = useState<ApiRun[] | null>(null);
+  const [runsError, setRunsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!officerMode) return;
+    let cancelled = false;
+    (async () => {
+      const res = await apiClient.runs(20);
+      if (cancelled) return;
+      if (res.success) { setRuns(res.data.runs); setRunsError(null); }
+      else { setRuns(null); setRunsError(res.error.message); }
+    })();
+    return () => { cancelled = true; };
+  }, [officerMode]);
+
+  const verdictColor = (v: string) =>
+    v === 'PROCEED' ? COLORS.success : v === 'PROCEED_WITH_CHANGES' ? COLORS.warning : COLORS.error;
+  const verdictLabel = (v: string) =>
+    v === 'PROCEED' ? 'Proceed' : v === 'PROCEED_WITH_CHANGES' ? 'Adjust' : 'Reconsider';
 
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.container}>
@@ -86,22 +111,45 @@ export default function SettingsScreen() {
 
         {officerMode && (
           <View style={styles.applicantList}>
-            {[
-              { name: 'Suresh Patil',  sector: 'Dairy',   village: 'Nimgaon', amount: '₹50,000',  verdict: 'Proceed',    color: COLORS.success },
-              { name: 'Anita Devi',    sector: 'Kirana',  village: 'Rampur',  amount: '₹80,000',  verdict: 'Adjust',     color: COLORS.warning },
-              { name: 'Ramesh Shinde', sector: 'Poultry', village: 'Kavathe', amount: '₹1,50,000', verdict: 'Reconsider', color: COLORS.error },
-            ].map((a) => (
-              <View key={a.name} style={styles.applicant}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.applicantName}>{a.name}</Text>
-                  <Text style={styles.applicantSub}>{a.sector} • {a.village}</Text>
+            {runsError ? (
+              <Text style={styles.rowSub}>
+                Cannot reach the server ({runsError}). The review queue is read live from the
+                backend run log; nothing is cached on the device to stand in for it.
+              </Text>
+            ) : runs === null ? (
+              <ActivityIndicator color={COLORS.accent} />
+            ) : runs.length === 0 ? (
+              <Text style={styles.rowSub}>
+                No assessments have been run against this server yet.
+              </Text>
+            ) : (
+              runs.map((r) => (
+                <View key={r.run_id} style={styles.applicant}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.applicantName}>{r.village}</Text>
+                    <Text style={styles.applicantSub}>
+                      {r.sector.replace(/_/g, ' ')} • {r.confidence} confidence • run {r.run_id.slice(0, 8)}
+                    </Text>
+                  </View>
+                  <Text style={styles.applicantAmt}>
+                    ₹{Math.round(r.capital_inr).toLocaleString('en-IN')}
+                  </Text>
+                  <View
+                    style={[
+                      styles.verdictBadge,
+                      {
+                        backgroundColor: verdictColor(r.verdict) + '18',
+                        borderColor: verdictColor(r.verdict) + '55',
+                      },
+                    ]}
+                  >
+                    <Text style={[styles.verdictText, { color: verdictColor(r.verdict) }]}>
+                      {verdictLabel(r.verdict)}
+                    </Text>
+                  </View>
                 </View>
-                <Text style={styles.applicantAmt}>{a.amount}</Text>
-                <View style={[styles.verdictBadge, { backgroundColor: a.color + '18', borderColor: a.color + '55' }]}>
-                  <Text style={[styles.verdictText, { color: a.color }]}>{a.verdict}</Text>
-                </View>
-              </View>
-            ))}
+              ))
+            )}
           </View>
         )}
       </View>

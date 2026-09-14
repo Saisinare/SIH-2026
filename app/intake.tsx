@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -17,9 +17,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppStore } from '../src/presentation/store/app-store';
-import { villageRepo, verdictEngine } from '../src/core/di';
+import { villageRepo, runAssessment } from '../src/core/di';
 import { Village } from '../src/domain/models/village';
-import { AppConstants } from '../src/core/constants/app-constants';
+import { ApiSector } from '../src/data/services/api-client';
+import { loadSectors, sectorLabel, sectorIcon } from '../src/data/services/sector-catalog';
 
 const COLORS = {
   bg: '#FAF0E6',
@@ -33,6 +34,17 @@ const COLORS = {
   green: '#10B981',
   headerBg: '#BD5D38', // Teal green top header like image
 };
+
+/**
+ * Sector ids here are the backend's own (/sectors); the amounts are just
+ * convenient starting points, not claims about any village.
+ */
+const QUICK_FILLS = [
+  { label: 'Kirana store · ₹3L', sector: 'kirana_retail', loanAmount: 300000, capital: 60000 },
+  { label: 'Dairy (buffalo) · ₹1.8L', sector: 'dairy_buffalo', loanAmount: 180000, capital: 40000 },
+  { label: 'Goat rearing · ₹1.25L', sector: 'goat_rearing', loanAmount: 125000, capital: 30000 },
+  { label: 'Backyard poultry · ₹35k', sector: 'backyard_poultry', loanAmount: 35000, capital: 10000 },
+];
 
 export default function IntakeScreen() {
   const router = useRouter();
@@ -52,11 +64,41 @@ export default function IntakeScreen() {
     setIsLoading,
     selectedVillage,
     setVillage,
+    locale,
   } = useAppStore();
 
   const [villageQuery, setVillageQuery] = useState(selectedVillage?.name ?? '');
   const [suggestions, setSuggestions] = useState<Village[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [sectors, setSectors] = useState<ApiSector[]>([]);
+  const [sectorsError, setSectorsError] = useState<string | null>(null);
+  const [searchError, setSearchError] = useState<string | null>(null);
+
+  // The picker offers exactly the sectors the engine can assess. Loading them
+  // from the backend rather than a local list means a chip can never promise a
+  // verdict the server cannot produce.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const res = await loadSectors();
+      if (cancelled) return;
+      if (res.success) {
+        setSectors(res.data);
+        setSectorsError(null);
+        // Keep the stored sector valid: an old saved value (or the default)
+        // may not be one of the ids the backend accepts.
+        if (!res.data.some((s2) => s2.sector_id === sector) && res.data.length > 0) {
+          setSector(res.data[0].sector_id);
+        }
+      } else {
+        setSectorsError(res.error.message);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const onSearchChanged = async (query: string) => {
     setVillageQuery(query);
@@ -72,79 +114,67 @@ export default function IntakeScreen() {
     setIsSearching(false);
     if (result.success) {
       setSuggestions(result.data.slice(0, 8));
+      setSearchError(null);
     } else {
+      // A failed lookup used to render as an empty suggestion list, which is
+      // indistinguishable from "no such village" — say which it was.
       setSuggestions([]);
+      setSearchError(result.error.message);
     }
   };
 
-  const applyPreset = async (opts: {
-    villageId?: string;
-    villageName: string;
-    sector: string;
-    loanAmount: number;
-    capital: number;
-  }) => {
+  /**
+   * Quick-fill only sets the sector and the amounts. It deliberately does NOT
+   * pick a village: the earlier presets pointed at sample villages ("Rampur",
+   * "Nimgaon", ids V001/V014/V023) that do not exist in the real register, so
+   * they either failed silently or put a verdict on a fictional place.
+   */
+  const applyPreset = (opts: { sector: string; loanAmount: number; capital: number }) => {
     setSector(opts.sector);
     setLoanAmount(opts.loanAmount);
     setAvailableCapital(opts.capital);
-    if (opts.villageId) {
-      const byId = await villageRepo.findById(opts.villageId);
-      if (byId.success) {
-        setVillage(byId.data);
-        setVillageQuery(byId.data.name);
-        setSuggestions([]);
-        return;
-      }
-    }
-    const search = await villageRepo.searchByName(opts.villageName);
-    if (search.success && search.data.length > 0) {
-      setVillage(search.data[0]);
-      setVillageQuery(search.data[0].name);
-      setSuggestions(search.data.length > 1 ? search.data : []);
-    }
   };
 
   const handleAnalyze = async () => {
     let village = selectedVillage;
     if (!village) {
-      const search = await villageRepo.searchByName(villageQuery || 'Nimgaon');
+      if (!villageQuery.trim()) {
+        Alert.alert('Village needed', 'Enter your village name so the assessment uses real local data.');
+        return;
+      }
+      const search = await villageRepo.searchByName(villageQuery);
       if (search.success && search.data.length > 0) {
         village = search.data[0];
         setVillage(village);
       } else {
-        // Fallback default village for demo
-        village = {
-          id: 'V014',
-          name: villageQuery || 'Nimgaon',
-          district: 'Satvara',
-          taluka: 'Yeola',
-          state: 'Maharashtra',
-          population: 4200,
-          households: 850,
-          electrified: true,
-          bankBranchAvailable: true,
-          pavedRoadAccess: true,
-        };
-        setVillage(village);
+        // No invented fallback village — a name we cannot resolve against the
+        // real village register is a name we must not put a verdict on.
+        Alert.alert(
+          'Village not found',
+          `We could not find "${villageQuery}" in the village register. Check the spelling, or pick one of the suggestions.`
+        );
+        return;
       }
     }
 
     setIsLoading(true);
-    const result = await verdictEngine.evaluate(
+    const result = await runAssessment({
       village,
       sector,
-      loanAmount,
+      requestedLoanAmount: loanAmount,
       availableCapital,
-      isWoman,
-      isScSt
-    );
+      // SC/ST is the backend's own target-group term; women-headed is not a
+      // separate group in the committed NBCFDC rules, so it is not faked here.
+      targetGroup: isScSt ? 'SC' : 'OBC',
+      lang: locale === 'en' ? 'en' : 'mr',
+    });
     setIsLoading(false);
 
     if (result.success) {
       setVerdict(result.data);
       router.push('/results');
     } else {
-      Alert.alert('Engine Error', result.error.message);
+      Alert.alert('Assessment unavailable', result.error.message);
     }
   };
 
@@ -187,64 +217,28 @@ export default function IntakeScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* ── PRESETS CARD (Matching Image 1) ───────────────────────── */}
+        {/* ── QUICK FILL CARD ───────────────────────────────────────── */}
         <View style={styles.card}>
           <View style={styles.presetHeaderRow}>
             <Ionicons name="flash" size={16} color="#BD5D38" />
-            <Text style={styles.presetTitle}>Quick Demo Presets</Text>
+            <Text style={styles.presetTitle}>Quick fill</Text>
           </View>
+          <Text style={styles.presetCaption}>
+            Fills the sector and amounts only — enter your own village below.
+          </Text>
 
           <View style={styles.presetList}>
-            <TouchableOpacity
-              style={styles.presetItem}
-              activeOpacity={0.8}
-              onPress={() =>
-                applyPreset({
-                  villageId: 'V001',
-                  villageName: 'Rampur',
-                  sector: 'Kirana Store',
-                  loanAmount: 300000,
-                  capital: 60000,
-                })
-              }
-            >
-              <Ionicons name="basket-outline" size={16} color="#BD5D38" />
-              <Text style={styles.presetText}>Kirana (Saturated)</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.presetItem}
-              activeOpacity={0.8}
-              onPress={() =>
-                applyPreset({
-                  villageId: 'V014',
-                  villageName: 'Nimgaon',
-                  sector: 'Dairy',
-                  loanAmount: 100000,
-                  capital: 40000,
-                })
-              }
-            >
-              <Ionicons name="water-outline" size={16} color="#0D6B6E" />
-              <Text style={styles.presetText}>Dairy (High Viability)</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.presetItem}
-              activeOpacity={0.8}
-              onPress={() =>
-                applyPreset({
-                  villageId: 'V023',
-                  villageName: 'Wanjarwadi',
-                  sector: 'Poultry',
-                  loanAmount: 250000,
-                  capital: 15000,
-                })
-              }
-            >
-              <Ionicons name="egg-outline" size={16} color="#D97706" />
-              <Text style={styles.presetText}>Poultry (Over-borrow)</Text>
-            </TouchableOpacity>
+            {QUICK_FILLS.map((q) => (
+              <TouchableOpacity
+                key={q.sector}
+                style={styles.presetItem}
+                activeOpacity={0.8}
+                onPress={() => applyPreset(q)}
+              >
+                <Ionicons name={sectorIcon(q.sector) as any} size={16} color="#BD5D38" />
+                <Text style={styles.presetText}>{q.label}</Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
 
@@ -257,7 +251,7 @@ export default function IntakeScreen() {
               style={styles.textInput}
               value={villageQuery}
               onChangeText={onSearchChanged}
-              placeholder="e.g. Rampur, Nandgaon..."
+              placeholder="e.g. Nimgaon, Sangamner..."
               placeholderTextColor="#9CA3AF"
             />
           </View>
@@ -268,6 +262,14 @@ export default function IntakeScreen() {
         </View>
 
         {isSearching ? <ActivityIndicator style={{ marginTop: 8 }} color="#BD5D38" /> : null}
+
+        {searchError ? <Text style={styles.errorHint}>{searchError}</Text> : null}
+
+        {!isSearching && !searchError && villageQuery.trim().length > 1 && suggestions.length === 0 && !selectedVillage ? (
+          <Text style={styles.selectedHint}>
+            No village matching “{villageQuery.trim()}” in the register.
+          </Text>
+        ) : null}
 
         {suggestions.length > 0 ? (
           <View style={styles.suggestionBox}>
@@ -301,21 +303,33 @@ export default function IntakeScreen() {
 
         {/* ── 2. BUSINESS SECTOR (२. व्यवसाय प्रकार) ────────────────────── */}
         <Text style={styles.sectionLabel}>२. व्यवसाय प्रकार</Text>
+        {sectorsError ? (
+          <Text style={styles.errorHint}>
+            Could not load the sector list from the server ({sectorsError}). An assessment
+            needs the server, so try again once it is reachable.
+          </Text>
+        ) : null}
+        {sectors.length === 0 && !sectorsError ? (
+          <ActivityIndicator color="#BD5D38" style={{ alignSelf: 'flex-start' }} />
+        ) : null}
         <View style={styles.chipsContainer}>
-          {AppConstants.businessSectors.map((s) => {
-            const isActive = sector === s;
+          {sectors.map((s) => {
+            const isActive = sector === s.sector_id;
             return (
               <TouchableOpacity
-                key={s}
+                key={s.sector_id}
                 style={[styles.sectorChip, isActive && styles.sectorChipActive]}
                 activeOpacity={0.8}
-                onPress={() => setSector(s)}
+                onPress={() => setSector(s.sector_id)}
               >
-                {isActive ? (
-                  <Ionicons name="checkmark" size={16} color="#FFFFFF" style={{ marginRight: 4 }} />
-                ) : null}
+                <Ionicons
+                  name={(isActive ? 'checkmark' : sectorIcon(s.sector_id)) as any}
+                  size={16}
+                  color={isActive ? '#FFFFFF' : '#BD5D38'}
+                  style={{ marginRight: 6 }}
+                />
                 <Text style={[styles.sectorChipText, isActive && styles.sectorChipTextActive]}>
-                  {s}
+                  {sectorLabel(s, locale)}
                 </Text>
               </TouchableOpacity>
             );
@@ -506,6 +520,19 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#EADECE',
+  },
+  presetCaption: {
+    fontSize: 11,
+    color: COLORS.textMuted,
+    marginTop: -6,
+    marginBottom: 10,
+  },
+  errorHint: {
+    fontSize: 12,
+    color: '#B3261E',
+    marginTop: 8,
+    marginBottom: 10,
+    lineHeight: 17,
   },
   presetText: {
     fontSize: 13,
